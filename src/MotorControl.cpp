@@ -17,36 +17,55 @@ MotorControl::MotorControl(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int f
     _frequency = freq;
 }
 
-void MotorControl::addSpeed()
-{                           
-   // increments dtyCycle each time it is called
-
-}
-
-void MotorControl::decrementSpeed()
+void MotorControl::move(int leftmot, int rightmot)
 {
-    // decrements dtyCycle each time it is called
-}
-
-void MotorControl::foreward(int dytCycleF)
-{
-    // instantly defines new forewards speed from 0 to 100%
-    pwm_start(_fOutLM, _frequency, dytCycleF, RESOLUTION_10B_COMPARE_FORMAT);
+  if (leftmot > 0 && rightmot > 0)
+  {
+    pwm_start(_fOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
     pwm_start(_bOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-    pwm_start(_fOutRM, _frequency, dytCycleF, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_fOutRM, _frequency, rightmot, RESOLUTION_10B_COMPARE_FORMAT);
     pwm_start(_bOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-}
-
-void MotorControl::backwards(int dytCycleB)
-{
-    // instantly defines new backwards speed from 0 to 100%
+  }
+  else if (leftmot < 0 && rightmot < 0)
+  {
     pwm_start(_fOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-    pwm_start(_bOutLM, _frequency, dytCycleB, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
     pwm_start(_fOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-    pwm_start(_bOutRM, _frequency, dytCycleB, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutRM, _frequency, rightmot, RESOLUTION_10B_COMPARE_FORMAT); 
+  }
+  else if (leftmot == 0 && rightmot == 0)
+  {
+    pwm_start(_fOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_fOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT); 
+  }
+  else if (leftmot > 0 && rightmot < 0)
+  {
+    pwm_start(_fOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_fOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutRM, _frequency, rightmot, RESOLUTION_10B_COMPARE_FORMAT);  
+  }
+  else
+  {
+    pwm_start(_fOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_fOutRM, _frequency, rightmot, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT); 
+  }
 }
 
-void MotorControl::goToAngle(int delay)
+void MotorControl::goToAngle(String direction, int wait)
 {
-    
+    if (direction == "L") //left
+    {
+        move(-50, 50);
+        delay(wait);
+    }
+    else if (direction == "R") //right
+    {
+        move(50, -50);
+        delay(wait);
+    }
 }

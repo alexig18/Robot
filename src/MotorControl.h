@@ -11,11 +11,10 @@ class MotorControl
 {
     public:
     MotorControl (int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq);
-    void addSpeed();
-    void decrementSpeed();
-    void foreward(int dytCycleF);
-    void backwards(int dytCycleB);
-    void goToAngle(int delay);
+
+    void goToAngle(String direction, int delay);
+    void move(int leftmot, int rightmot);
+    
     private:
     // the underscore helps show the variable is private
     PinName _fOutLM;
