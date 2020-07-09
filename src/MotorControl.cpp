@@ -2,7 +2,12 @@
 #include "MotorControl.h"
 #include "ctime"
 
-MotorControl::MotorControl(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq)
+MotorControl::MotorControl()
+{
+
+}
+
+void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq)
 {
     pinMode(lPinLM, OUTPUT);
     pinMode(rPinLM, OUTPUT);
