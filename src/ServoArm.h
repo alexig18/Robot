@@ -5,21 +5,23 @@ Library to control servo arms
 #define ServoArm_h
 
 #include "Arduino.h"
+#include "Servo.h"
 
 class ServoArm
 {
     public:
-    ServoArm(int leftArmPin, int rightArmPin);
+    ServoArm();
+    void begin(int rightArmPin, int leftArmPin);
     void closeR();
     void closeL();
     void openR();
-    void closeL();
+    void openL();
     void closeBoth();
     void openBoth();
     private:
     // the underscore helps show the variable is private
-    int _pinL;
-    int _pinR;
+    Servo _servoR;
+    Servo _servoL;
 };
 
 #endif
