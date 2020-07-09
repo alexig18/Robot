@@ -10,12 +10,14 @@ Library to control servo backflap of upper storage
 class ServoBackFlap
 {
     public:
-    ServoBackFlap(int pin);
+    ServoBackFlap();
+    void begin(int pin);
+
     void open();
     void close();
     private:
     // the underscore helps show the variable is private
-    int _pin;
+   
 };
 
 #endif
