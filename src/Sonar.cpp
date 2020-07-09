@@ -7,11 +7,7 @@
 
 Sonar::Sonar(int trigger, int echo, int maxDistance, int offset)
 {
-    _trigger = trigger;
-    _echo = echo;
-    _maxDistance = maxDistance;
-    _offset = offset;
-    _newPing = NewPing(trigger,echo,maxDistance);
+     _newPing = new NewPing(trigger,echo,maxDistance);
  
 }
 
