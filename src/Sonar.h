@@ -10,12 +10,9 @@ class Sonar
     Sonar (int trigger, int echo, int maxDistance, int offset);
     int dist();
     private:
-    // the underscore helps show the variable is private
-    int _trigger;
-    int _echo;
-    int _maxDistance;
     int _offset;
-    NewPing _newPing; 
+    // the underscore helps show the variable is private
+    NewPing* _newPing; 
 };
 
 #endif
