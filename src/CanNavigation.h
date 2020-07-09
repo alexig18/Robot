@@ -3,10 +3,11 @@ Possibly useful for finding can, interpreting the location, and navigating to it
 */
 
 
-#ifndef CanNavi_h
-#define CanNavi_h
+#ifndef CanNavigation_h
+#define CanNavigation_h
 
 #include "Arduino.h"
+#include "ServoArm.h"
 
 class CanNavi
 {
@@ -14,7 +15,7 @@ class CanNavi
     CanNavi();
     boolean findItem(); // to locate something within sonar field of robot
     boolean isCan(); // to confirm whether something is a can or not
-    void getCan(); // navigates to can
+    void goToCan(); // navigates to can
     void collectCan(); // control can pick up
     private:
     // the underscore helps show the variable is private

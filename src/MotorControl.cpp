@@ -1,14 +1,14 @@
 #include "Arduino.h"
 #include "MotorControl.h"
 
-MotorControl::MotorControl(int pinOut)
+class MotorControl::MotorControl(int pinOut)
 {
     pinMode(pinOut, OUTPUT);
     _pin = pinOut;
 }
 
 void MotorControl::accel()
-{
+{                           
 // instructions to speed up
 }
 
