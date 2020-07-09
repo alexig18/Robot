@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <MotorControl.h>
 #include <Sonar.h>
+#include <ctime>
 
 #define SERVO PA0
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -21,7 +22,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Servo servo;
 
 void setup() {  
-  Serial.begin(9600);
+  MotorControl(MOTOR_A, MOTOR_B, 2000);
+
   // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   // display.clearDisplay();
   // display.setTextSize(1);
@@ -31,17 +33,13 @@ void setup() {
   // pinMode(MOTOR_A, OUTPUT);
   // pinMode(MOTOR_B, OUTPUT);
 
-  servo.attach(SERVO);
 
 }
 
 void loop() {
-  servo.write(0);
-  delay(2000);
+  
 
-  servo.write(45);
-  delay(2000);
 
-  servo.write(90);
-  delay(2000);
+
+
 } 

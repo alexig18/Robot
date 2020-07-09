@@ -10,13 +10,20 @@ Library to help control motors
 class MotorControl
 {
     public:
-    MotorControl(int pin);
-    void accel();
-    void decel();
-    void constV();
+    MotorControl (int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq);
+    void addSpeed();
+    void decrementSpeed();
+    void foreward(int dytCycleF);
+    void backwards(int dytCycleB);
+    void goToAngle(int delay);
     private:
     // the underscore helps show the variable is private
-    int _pin;
+    PinName _fOutLM;
+    PinName _bOutLM;
+    PinName _fOutRM;
+    PinName _bOutRM;
+
+    int _frequency;
 };
 
 #endif
