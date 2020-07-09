@@ -21,7 +21,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define PWMFREQ 1000
 #define cycles 10
 
-Servo servo;
 MotorControl motors = MotorControl();
 int count;
 
