@@ -38,9 +38,9 @@ void setup() {
 
 void loop() {
   while(count <= cycles){
-    motors.foreward(PWMFREQ);
-    delay(5000);
-    motors.backwards(PWMFREQ);
-    delay(5000);
+    motors.move(PWMFREQ, PWMFREQ);
+    delay(2000);
+    motors.move(-PWMFREQ, -PWMFREQ);
+    delay(2000);
   }
 } 
