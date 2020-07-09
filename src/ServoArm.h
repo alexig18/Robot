@@ -13,7 +13,7 @@ class ServoArm
     void closeR();
     void closeL();
     void openR();
-    void closeL();
+    void openL();
     void closeBoth();
     void openBoth();
     private:

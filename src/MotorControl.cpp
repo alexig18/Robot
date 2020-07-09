@@ -8,7 +8,7 @@ MotorControl::MotorControl(int pinOut)
 }
 
 void MotorControl::accel()
-{
+{                           
 // instructions to speed up
 }
 
