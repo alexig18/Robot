@@ -13,16 +13,20 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define INPUT PA7
-#define POT_SENSOR PA6
 #define PROG_CONTROL PB5
-#define MOTOR_A PA_8
-#define MOTOR_B PB_8
-#define PMWFREQ 512
+#define MOTOR_L_R PA_8 // left motor right pin
+#define MOTOR_L_L PB_8 // left motor left pin
+#define MOTOR_R_R PA_3 // right motor forward
+#define MOTOR_R_L PB_3 // right motor backward
+#define PWMFREQ 512
+#define cycles 10
 
 Servo servo;
+MotorControl motors;
+int count;
 
 void setup() {  
-  MotorControl(MOTOR_A, MOTOR_B, 2000);
+  motors = MotorControl(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PWMFREQ);
 
   // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   // display.clearDisplay();
@@ -30,16 +34,13 @@ void setup() {
   // display.setTextColor(SSD1306_WHITE); 
   // display.setCursor(0,0); 
 
-  // pinMode(MOTOR_A, OUTPUT);
-  // pinMode(MOTOR_B, OUTPUT);
-
-
 }
 
 void loop() {
-  
-
-
-
-
+  while(count <= cycles){
+    motors.foreward(PWMFREQ);
+    delay(5000);
+    motors.backwards(PWMFREQ);
+    delay(5000);
+  }
 } 
