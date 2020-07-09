@@ -24,7 +24,6 @@ MotorControl motors = MotorControl();
 int count;
 
 void setup() {  
-  timerSetup();
   motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PWMFREQ);
 
    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
