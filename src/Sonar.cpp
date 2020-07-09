@@ -17,7 +17,7 @@ Sonar::Sonar(int trigger, int echo, int maxDistance, int offset)
 int Sonar::dist()
 {
 
-    return  _newPing.ping_median(SAMPLES) + _offset;
+    return  _newPing->ping_median(SAMPLES) + _offset;
 
 }
 
