@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <MotorControl.h>
 #include <Sonar.h>
-#include <ctime>
 
 #define SERVO PA0
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -13,34 +12,36 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define INPUT PA7
+#define POT_SENSOR PA6
 #define PROG_CONTROL PB5
-#define MOTOR_L_R PA_7 // left motor right pin
-#define MOTOR_L_L PA_6 // left motor left pin
-#define MOTOR_R_R PB_1 // right motor forward
-#define MOTOR_R_L PB_0 // right motor backward
-#define PWMFREQ 1000
-#define cycles 10
+#define MOTOR_A PA_8
+#define MOTOR_B PB_8
+#define PMWFREQ 512
 
-MotorControl motors = MotorControl();
-int count;
+Servo servo;
 
 void setup() {  
-  // motors = MotorControl();
-  motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PWMFREQ);
-
+  Serial.begin(9600);
   // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
   // display.clearDisplay();
   // display.setTextSize(1);
   // display.setTextColor(SSD1306_WHITE); 
   // display.setCursor(0,0); 
 
+  // pinMode(MOTOR_A, OUTPUT);
+  // pinMode(MOTOR_B, OUTPUT);
+
+  servo.attach(SERVO);
+
 }
 
 void loop() {
-  while(count <= cycles){
-    motors.move(50, 50);
-    delay(2000);
-    motors.move(-50, -50);
-    delay(2000);
-  }
+  servo.write(0);
+  delay(2000);
+
+  servo.write(45);
+  delay(2000);
+
+  servo.write(90);
+  delay(2000);
 } 
