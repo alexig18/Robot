@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "MotorControl.h"
 
-class MotorControl::MotorControl(int pinOut)
+MotorControl::MotorControl(int pinOut)
 {
     pinMode(pinOut, OUTPUT);
     _pin = pinOut;

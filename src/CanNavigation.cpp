@@ -1,10 +1,10 @@
-#include "CanNavigation.h"
 #include "Arduino.h"
+#include "CanNavigation.h"
 #include "ServoArm.h"
 
 CanNavigation::CanNavigation()
 {
-    _item = findItem()
+    _item = findItem();
     if(_item) {
         _isCan = isCan();
         if(_isCan) {
@@ -18,7 +18,7 @@ boolean CanNavigation::findItem()
     // use sonar to find item within 8''
 }
 
-boolena CanNavigation::isCan()
+boolean CanNavigation::isCan()
 {
     /*
     dist = sonar inpu
