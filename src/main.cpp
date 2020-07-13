@@ -3,7 +3,7 @@
 #include <Servo.h>
 #include <Arduino.h>
 #include <MotorControl.h>
-#include <Sonar.h>
+#include <LiftCan.h>
 
 #define SERVO PA0
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -17,31 +17,18 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define MOTOR_A PA_8
 #define MOTOR_B PB_8
 #define PMWFREQ 512
+#define R_SERVO PB5
+#define L_SERVO PA5
 
 Servo servo;
+LiftCan cL = LiftCan();
 
 void setup() {  
-  Serial.begin(9600);
-  // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-  // display.clearDisplay();
-  // display.setTextSize(1);
-  // display.setTextColor(SSD1306_WHITE); 
-  // display.setCursor(0,0); 
-
-  // pinMode(MOTOR_A, OUTPUT);
-  // pinMode(MOTOR_B, OUTPUT);
-
-  servo.attach(SERVO);
-
+  cL.begin(R_SERVO, L_SERVO);
 }
 
 void loop() {
-  servo.write(0);
-  delay(2000);
-
-  servo.write(45);
-  delay(2000);
-
-  servo.write(90);
-  delay(2000);
+  cL.lift();
+  delay(5000);
+  cL.lower();
 } 
