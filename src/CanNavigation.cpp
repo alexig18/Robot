@@ -13,12 +13,12 @@ CanNavigation::CanNavigation()
     }
 }
 
-boolean CanNavigation::findItem()
+bool CanNavigation::findItem()
 {
     // use sonar to find item within 8''
 }
 
-boolean CanNavigation::isCan()
+bool CanNavigation::isCan()
 {
     /*
     dist = sonar inpu

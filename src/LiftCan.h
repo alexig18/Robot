@@ -10,13 +10,14 @@ Library to control the four-bar linkage to lift the can into upper storage
 class LiftCan
 {
     public:
-    LiftCan(int rightBarPin, int leftBarPin);
+    LiftCan();
+    void begin(int rightBarPin, int leftBarPin);
     void lift();
     //do we need a lower function too?
     private:
     // the underscore helps show the variable is private
-    int _pinL;
-    int _pinR;
+    Servo _servoR;
+    Servo _servoL;
 };
 
 #endif
