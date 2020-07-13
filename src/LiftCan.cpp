@@ -1,28 +1,27 @@
 #include <LiftCan.h>
+#define LINKAGE_ANGLE 160
+#define DELAY 5000
 
-Servo servoR;
-Servo servoL;
 
-LiftCan::LiftCan(int pinRight, int pinLeft)
+LiftCan::LiftCan() {}
+
+void LiftCan::begin(int pinRight, int pinLeft)
 {
-    servoR.write(0);
-    servoL.write(0);
-    servoR.attach(pinRight);
-    servoL.attach(pinLeft);
-    _pinR = pinRight;
-    _pinL = pinLeft;
+    _servoR.write(0);
+    _servoL.write(0);
+    _servoR.attach(pinRight);
+    _servoL.attach(pinLeft);
 }
 
 // instructions to operate the four bar linkage/lift the can into upper storage
 void LiftCan::lift()
 {
-    servoR.write(-160);
-    servoL.write(160);
-}
-void LiftCan::lower()
-{
-    servoR.write(160);
-    servoL.write(-160);
+    _servoR.write(-LINKAGE_ANGLE);
+    _servoL.write(LINKAGE_ANGLE);
+    //Amount of time before the lift moves back down
+    delay(DELAY);
+    _servoR.write(LINKAGE_ANGLE);
+    _servoL.write(-LINKAGE_ANGLE);
 }
 
 
