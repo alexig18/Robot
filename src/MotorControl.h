@@ -14,6 +14,8 @@ class MotorControl
     void begin (int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq);
     void goToAngle(String direction, int delay);
     void move(int leftmot, int rightmot);
+    int leftFreq();
+    int rightFreq();
     
     private:
     // the underscore helps show the variable is private
@@ -23,6 +25,8 @@ class MotorControl
     PinName _bOutRM;
 
     int _frequency;
+    int _leftFreq;
+    int _rightFreq;
 };
 
 #endif

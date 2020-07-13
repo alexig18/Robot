@@ -2,10 +2,7 @@
 #include "MotorControl.h"
 #include "ctime"
 
-MotorControl::MotorControl()
-{
-
-}
+MotorControl::MotorControl(){}
 
 void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq)
 {
@@ -24,6 +21,8 @@ void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int fre
 
 void MotorControl::move(int leftmot, int rightmot)
 {
+  _leftFreq = leftmot;
+  _rightFreq = rightmot;
   if (leftmot > 0 && rightmot > 0) // both forward
   {
     pwm_start(_fOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
@@ -73,4 +72,14 @@ void MotorControl::goToAngle(String direction, int wait)
         move(500, -500);
         delay(wait);
     }
+}
+
+int MotorControl::leftFreq()
+{
+  return _leftFreq;
+}
+
+int MotorControl::rightFreq()
+{
+  return _rightFreq;
 }
