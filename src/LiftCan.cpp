@@ -18,8 +18,9 @@ void LiftCan::lift()
 {
     servoR.write(-160);
     servoL.write(160);
-    //Amount of time before the lift moves back down
-    delay(5000);
+}
+void LiftCan::lower()
+{
     servoR.write(160);
     servoL.write(-160);
 }

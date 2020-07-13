@@ -12,9 +12,8 @@ class LiftCan
     public:
     LiftCan(int rightBarPin, int leftBarPin);
     void lift();
-    //do we need a lower function too?
+    void lower();
     private:
-    // the underscore helps show the variable is private
     int _pinL;
     int _pinR;
 };
