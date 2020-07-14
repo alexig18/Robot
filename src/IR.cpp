@@ -1,23 +1,27 @@
-#include <IRDetection.h>
+#include <IR.h>
 
-IRDetection::IRDetection(int pinOut)
+IR::IR(){}
+
+void IR::begin(int pinIn, MotorControl lMotor, MotorControl rMotor)
 {
-    pinMode(pinOut, INPUT);
+    pinMode(pinIn, INPUT);
     // do we want a threshold value for what the signal has to be above?
-    _pin = pinOut;
+    _pIn = pinIn;
+    pinMode(_pIn, INPUT);
 }
 
-void IRDetection::locateBin()
+void IR::locateBin()
 {
+
 // instructions to locate the recycling bin
 }
 
-void IRDetection::moveToBin()
+void IR::moveToBin()
 {
     // instructions to navigate to the recycling bin
 }
 
-void IRDetection::atBin()
+void IR::atBin()
 {
     // instructions of what to do once at recylcing bin
 }
