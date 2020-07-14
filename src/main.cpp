@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <MotorControl.h>
 #include <Sonar.h>
-#include <ctime>
 
 #define SERVO PA0
 #define SCREEN_WIDTH 128 // OLED display width, in pixels

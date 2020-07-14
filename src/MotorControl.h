@@ -10,6 +10,7 @@ Library to help control motors
 class MotorControl
 {
     public:
+
     MotorControl();
     void begin (int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq);
     void goToAngle(String direction, int delay);
@@ -27,6 +28,7 @@ class MotorControl
     int _frequency;
     int _leftFreq;
     int _rightFreq;
+
 };
 
 #endif
