@@ -18,8 +18,10 @@ void LiftCan::lift()
 {
     _servoR.write(-LINKAGE_ANGLE);
     _servoL.write(LINKAGE_ANGLE);
-    //Amount of time before the lift moves back down
-    delay(DELAY);
+}
+
+void LiftCan::lower()
+{
     _servoR.write(LINKAGE_ANGLE);
     _servoL.write(-LINKAGE_ANGLE);
 }

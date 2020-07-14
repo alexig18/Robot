@@ -3,7 +3,7 @@
 #include <Servo.h>
 #include <Arduino.h>
 #include <MotorControl.h>
-#include <Sonar.h>
+#include <LiftCan.h>
 
 #define SERVO PA0
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -53,6 +53,7 @@ display.setCursor(0,0);
   display.clearDisplay();
   display.println("damn");
   display.display();
+
 } 
 
 // void timerSetup() {
