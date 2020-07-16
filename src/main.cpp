@@ -13,6 +13,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 #define INPUT PA7
 #define POT_SENSOR PA6
 #define PROG_CONTROL PB5
@@ -37,6 +38,8 @@ void loop() {
 =======
 =======
 >>>>>>> 2dc3c1f18bccddaf9b9cbba7fb8f42fd552ff7ce
+=======
+>>>>>>> 6575c4a7c82bd9824601ce48196103397a24b975
 #define MOTOR_L_R PA_7 // left motor right pin
 #define MOTOR_L_L PA_6 // left motor left pin
 #define MOTOR_R_R PB_1 // right motor forward
@@ -80,9 +83,13 @@ display.setCursor(0,0);
   display.println("damn");
   display.display();
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 78d9479ccf28545718c3b87a08429f041f14e019
 =======
 >>>>>>> 2dc3c1f18bccddaf9b9cbba7fb8f42fd552ff7ce
+=======
+
+>>>>>>> 6575c4a7c82bd9824601ce48196103397a24b975
 } 
 
 // void timerSetup() {
