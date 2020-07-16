@@ -13,6 +13,7 @@ class LiftCan
     LiftCan();
     void begin(int rightBarPin, int leftBarPin);
     void lift();
+    void lower();
     //do we need a lower function too?
     private:
     // the underscore helps show the variable is private
