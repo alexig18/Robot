@@ -1,17 +1,7 @@
 #include "Arduino.h"
 #include "MotorControl.h"
+#include "ctime"
 
-<<<<<<< HEAD
-MotorControl::MotorControl(int pinOut)
-{
-    pinMode(pinOut, OUTPUT);
-    _pin = pinOut;
-}
-
-void MotorControl::accel()
-{                           
-// instructions to speed up
-=======
 MotorControl::MotorControl(){}
 
 void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq)
@@ -27,16 +17,10 @@ void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int fre
     _bOutRM = PinName(lPinRM);
 
     _frequency = freq;
->>>>>>> 78d9479ccf28545718c3b87a08429f041f14e019
 }
 
-void MotorControl::decel()
+void MotorControl::move(int leftmot, int rightmot)
 {
-<<<<<<< HEAD
-    // instructions to slow down
-=======
-  _leftFreq = leftmot;
-  _rightFreq = rightmot;
   if (leftmot > 0 && rightmot > 0) // both forward
   {
     pwm_start(_fOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
@@ -72,15 +56,10 @@ void MotorControl::decel()
     pwm_start(_fOutRM, _frequency, rightmot, RESOLUTION_10B_COMPARE_FORMAT);
     pwm_start(_bOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT); 
   }
->>>>>>> 78d9479ccf28545718c3b87a08429f041f14e019
 }
 
-void MotorControl::constV()
+void MotorControl::goToAngle(String direction, int wait)
 {
-<<<<<<< HEAD
-    // keep speed constant
-    // not sure if this is necessary
-=======
     if (direction == "L") //left
     {
         move(-500, 500);
@@ -91,15 +70,4 @@ void MotorControl::constV()
         move(500, -500);
         delay(wait);
     }
-}
-
-int MotorControl::leftFreq()
-{
-  return _leftFreq;
-}
-
-int MotorControl::rightFreq()
-{
-  return _rightFreq;
->>>>>>> 78d9479ccf28545718c3b87a08429f041f14e019
 }
