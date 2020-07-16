@@ -23,5 +23,4 @@ void LiftCan::lower()
 {
     _servoR.write(0);
     _servoL.write(LINKAGE_ANGLE);
-
-
+}

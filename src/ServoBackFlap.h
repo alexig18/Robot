@@ -12,7 +12,6 @@ class ServoBackFlap
     public:
     ServoBackFlap();
     void begin(int pin);
-
     void open();
     void close();
     private:
