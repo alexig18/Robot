@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "MotorControl.h"
-
+#include "ctime"
 
 MotorControl::MotorControl(){}
 
@@ -17,14 +17,10 @@ void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int fre
     _bOutRM = PinName(lPinRM);
 
     _frequency = freq;
-
 }
 
-void MotorControl::decel()
+void MotorControl::move(int leftmot, int rightmot)
 {
-
-  _leftFreq = leftmot;
-  _rightFreq = rightmot;
   if (leftmot > 0 && rightmot > 0) // both forward
   {
     pwm_start(_fOutLM, _frequency, leftmot, RESOLUTION_10B_COMPARE_FORMAT);
@@ -60,12 +56,10 @@ void MotorControl::decel()
     pwm_start(_fOutRM, _frequency, rightmot, RESOLUTION_10B_COMPARE_FORMAT);
     pwm_start(_bOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT); 
   }
-
 }
 
-void MotorControl::constV()
+void MotorControl::goToAngle(String direction, int wait)
 {
-
     if (direction == "L") //left
     {
         move(-500, 500);
@@ -76,15 +70,4 @@ void MotorControl::constV()
         move(500, -500);
         delay(wait);
     }
-}
-
-int MotorControl::leftFreq()
-{
-  return _leftFreq;
-}
-
-int MotorControl::rightFreq()
-{
-  return _rightFreq;
-
 }

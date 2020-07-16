@@ -1,21 +1,25 @@
 /*
 Library to control the detection and navigation to the recycling bin
 */
-#ifndef IRDetection_h
-#define IRDetection_h
+#ifndef IR_h
+#include <MotorControl.h>
+#define IR_h
 
 #include "Arduino.h"
 
-class IRDetection
+class IR
 {
     public:
-    IRDetection(int pin);
+    IR();
+    void begin(int pinIn, MotorControl lMotor, MotorControl rMotor);
     void locateBin();
     void moveToBin();
     void atBin();
     private:
     // the underscore helps show the variable is private
-    int _pin;
+    int _pIn;
+    MotorControl _lM;
+    MotorControl _rM;
 };
 
 #endif
