@@ -18,10 +18,12 @@ class ServoArm
     void openL();
     void closeBoth();
     void openBoth();
+    void setAngle(int angle);
     private:
     // the underscore helps show the variable is private
     Servo _servoR;
     Servo _servoL;
+    int _armAngle = 160;
 };
 
 #endif
