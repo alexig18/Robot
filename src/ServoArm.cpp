@@ -1,5 +1,4 @@
 #include <ServoArm.h>
-#define ARM_ANGLE 160
 
 //default constructor
 ServoArm::ServoArm()
@@ -16,22 +15,22 @@ void ServoArm::begin(int pinRight, int pinLeft)
 
 void ServoArm::closeR()
 {
-    _servoR.write(ARM_ANGLE);
+    _servoR.write(_armAngle);
 }
 
 void ServoArm::closeL()
 {
-    _servoL.write(-ARM_ANGLE);
+    _servoL.write(-_armAngle);
 }
 
 void ServoArm::openR()
 {
-    _servoR.write(-ARM_ANGLE);
+    _servoR.write(-_armAngle);
 }
 
 void ServoArm::openL()
 {
-    _servoL.write(ARM_ANGLE);
+    _servoL.write(_armAngle);
 }
 
 void ServoArm::openBoth() {
