@@ -1,5 +1,6 @@
 #include <ServoBackFlap.h>
-#define BACKANG 90
+#define openAng 0
+#define closedAng 130
 
 Servo servo;
 
@@ -11,19 +12,18 @@ ServoBackFlap::ServoBackFlap()
 
 void ServoBackFlap::begin(int pin)
 {
-    servo.write(0);
     servo.attach(pin);
-    
+    servo.write(closedAng);
 }
 
 void ServoBackFlap::open()
 {
 // instructions to open the upper storage bin backflap, releasing the cans
-    servo.write(BACKANG);
+    servo.write(openAng);
 }
 
 void ServoBackFlap::close()
 {
     // instructions to close the upper storage bin backflap
-    servo.write(-BACKANG);
+    servo.write(closedAng);
 }

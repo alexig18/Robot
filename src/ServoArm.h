@@ -16,8 +16,9 @@ class ServoArm
     void closeL();
     void openR();
     void openL();
-    void closeBoth();
-    void openBoth();
+    void close();
+    void open();
+    void bump();
     void setAngle(int angle);
     private:
     // the underscore helps show the variable is private

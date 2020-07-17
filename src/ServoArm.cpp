@@ -1,8 +1,8 @@
 #include <ServoArm.h>
 
-#define closedR 0
-#define closedL 0
-#define Lopen 0
+#define closedR 160
+#define closedL 30
+#define Lopen 180
 #define Ropen 0
 
 //default constructor
@@ -10,7 +10,7 @@ ServoArm::ServoArm()
 {}
 
 //perform setup
-void ServoArm::begin(int pinRight, int pinLeft)
+void ServoArm::begin(int pinLeft, int pinRight)
 {
     _servoR.attach(pinRight);
     _servoL.attach(pinLeft);
@@ -42,14 +42,20 @@ void ServoArm::openL()
     _servoL.write(Lopen);
 }
 
-void ServoArm::openBoth() {
+void ServoArm::open() {
     this->ServoArm::openR();
     this->ServoArm::openL();
 }
 
-void ServoArm::closeBoth() {
+void ServoArm::close() {
     this->ServoArm::closeR();
     this->ServoArm::closeL();
 }
 
+void ServoArm::bump(){
+    _servoL.write(closedL-30);
+    _servoR.write(closedR+40);
+    delay(500);
+    this->ServoArm::close();
+}
 

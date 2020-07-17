@@ -12,8 +12,8 @@ class LiftCan
     public:
     LiftCan();
     void begin(int rightBarPin, int leftBarPin);
-    void lift();
-    void lower();
+    void lift(int speed);
+    void lower(int speed);
     private:
 };
 

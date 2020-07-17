@@ -1,7 +1,10 @@
 #include <LiftCan.h>
 
+#define LLBOUND 180
+#define RLBOUND 0
+
 #define moveangle 141
-#define speed 20
+
 
 int _count = 0;
 
@@ -15,25 +18,27 @@ void LiftCan::begin(int pinleft, int pinright)
 {
     rservo.attach(pinright);
     lservo.attach(pinleft);
+    rservo.write(RLBOUND);
+    lservo.write(LLBOUND);
 }
 
 // instructions to operate the four bar linkage/lift the can into upper storage
-void LiftCan::lift()
+void LiftCan::lift(int speed)
 {
    while(_count != moveangle){
-   lservo.write(180-_count);
-   rservo.write(0+_count);
+   lservo.write(LLBOUND-_count);
+   rservo.write(RLBOUND+_count);
    _count++;
    delay(speed);
  }
  _count = 0;
 }
 
-void LiftCan::lower()
+void LiftCan::lower(int speed)
 {
     while(_count != moveangle){
-   lservo.write(180+_count-moveangle);
-   rservo.write(0-_count+moveangle);
+   lservo.write(LLBOUND+_count-moveangle);
+   rservo.write(RLBOUND-_count+moveangle);
    _count++;
    delay(speed);    
     }
