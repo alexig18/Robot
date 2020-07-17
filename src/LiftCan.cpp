@@ -1,26 +1,41 @@
 #include <LiftCan.h>
-#define LINKAGE_ANGLE 160
 
+#define moveangle 141
+#define speed 20
+
+int _count = 0;
 
 LiftCan::LiftCan() {}
 
-void LiftCan::begin(int pinRight, int pinLeft)
+
+Servo lservo;
+Servo rservo;
+
+void LiftCan::begin(int pinleft, int pinright)
 {
-    _servoR.write(0);
-    _servoL.write(LINKAGE_ANGLE);
-    _servoR.attach(pinRight);
-    _servoL.attach(pinLeft);
+    rservo.attach(pinright);
+    lservo.attach(pinleft);
 }
 
 // instructions to operate the four bar linkage/lift the can into upper storage
 void LiftCan::lift()
 {
-     _servoR.write(LINKAGE_ANGLE);
-    _servoL.write(0);
+   while(_count != moveangle){
+   lservo.write(180-_count);
+   rservo.write(0+_count);
+   _count++;
+   delay(speed);
+ }
+ _count = 0;
 }
 
 void LiftCan::lower()
 {
-    _servoR.write(0);
-    _servoL.write(LINKAGE_ANGLE);
+    while(_count != moveangle){
+   lservo.write(180+_count-moveangle);
+   rservo.write(0-_count+moveangle);
+   _count++;
+   delay(speed);    
+    }
+    _count = 0;
 }

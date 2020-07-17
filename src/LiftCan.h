@@ -15,9 +15,6 @@ class LiftCan
     void lift();
     void lower();
     private:
-    // the underscore helps show the variable is private
-    Servo _servoR;
-    Servo _servoL;
 };
 
 #endif
