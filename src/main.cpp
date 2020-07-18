@@ -28,6 +28,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define echo PA5
 #define trigger PA4
 #define MAX_DISTANCE 300
+int count = 0;
 
 LiftCan cl;
 ServoArm arm;
@@ -35,7 +36,7 @@ ServoBackFlap back;
 MotorControl motors;
 NewPing sonar(trigger, echo,MAX_DISTANCE );
 
-int count = 0;
+
 void canDeposit(){
   arm.close();
   delay(1000);
@@ -70,14 +71,25 @@ void setup() {
 }
 
 void loop() {
+count++;
 
-display.clearDisplay();
-display.setCursor(0,0);
-display.println("distance: ");
-display.println(sonar.ping_cm());
-display.display();
-delay(100);
+motors.move(400, 400);
 
+if(sonar.ping_cm() < 30){
+  delay(500);
+  canDeposit();
+  delay(500);
+}
+
+if(count== 1000){
+  motors.move(0, 0);
+  delay(500);
+  motors.move(400, -400);
+  delay(500);
+
+
+  count = 0;
+}
 
 
 
