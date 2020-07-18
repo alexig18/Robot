@@ -6,15 +6,16 @@
 #include <LiftCan.h>
 #include<ServoArm.h>
 #include<ServoBackFlap.h>
+#include<NewPing.h>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET 	-1 // This display does not have a reset pin accessible
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-#define MOTOR_L_R PB_6
-#define MOTOR_L_L PB_8
-#define MOTOR_R_L PB_7
+//#define MOTOR_L_R PB_6
+//#define MOTOR_L_L PB_7
+#define MOTOR_R_L PB_8
 #define MOTOR_R_R PB_9
 
 #define PMWFREQ 1000
@@ -24,10 +25,15 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define RA PA6
 #define BACK PA3
 
+#define echo PA5
+#define trigger PA4
+#define MAX_DISTANCE 300
+
 LiftCan cl;
 ServoArm arm;
 ServoBackFlap back;
 MotorControl motors;
+NewPing sonar(trigger, echo,MAX_DISTANCE );
 
 int count = 0;
 void canDeposit(){
@@ -46,15 +52,38 @@ void setup() {
   cl.begin(L4, R4);
   arm.begin(LA, RA);
   back.begin(BACK);
-  motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PMWFREQ);
+  //motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PMWFREQ);
+  
+  
 
-delay(2000);
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+ 
+  // Displays Adafruit logo by default. call clearDisplay immediately if you don't want this.
+  display.display();
+  delay(2000);
+
+  // Displays "Hello world!" on the screen
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0,0);
 }
 
 void loop() {
-delay(5000);
-canDeposit();
-delay(5000);
+
+display.clearDisplay();
+display.setCursor(0,0);
+display.println("distance: ");
+display.println(sonar.ping_cm());
+display.display();
+delay(100);
+
+
+
+
+//delay(5000);
+//canDeposit();
+//delay(5000);
 
 //arm.close();
 //delay(10000);
