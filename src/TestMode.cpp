@@ -1,5 +1,5 @@
 /*
-Library for testing.
+Library to sense tape.
 */
 
 
@@ -21,80 +21,90 @@ Library for testing.
 class TestMode
 {
     public:
-    TestMode();
-    void testArms(ServoArm arm);
-    void testFourBar(LiftCan cl);
-    void testBackFlap(ServoBackFlap bf);
-    void testMoveStraight(MotorControl motors);
-    void testMoveBackwards(MotorControl motors);
-    void testTurnLeft(MotorControl motors);
-    void testTurnRight(MotorControl motors);  
+    TestMode(ServoArm arm, LiftCan cl, ServoBackFlap bf, MotorControl motors);
+    void testArms();
+    void testFourBar();
+    void testBackFlap();
+    void testMoveStraight();
+    void testMoveBackwards();
+    void testTurnLeft();
+    void testTurnRight();  
     void testSonar(NewPing sonar, Adafruit_SSD1306 display);  
-    void testDeposit(ServoArm arm, LiftCan cl);
+    void testDeposit();
+    private: 
+    ServoArm _arm;
+    LiftCan _cl;
+    ServoBackFlap _bf;
+    MotorControl _motors;
 };
 
 #endif
 
 ServoArm arms;
 
-TestMode::TestMode(){}
+TestMode::TestMode(ServoArm arm, LiftCan cl, ServoBackFlap bf, MotorControl motors){
+    _arm = arm;
+    _cl = cl;
+    _bf = bf;
+    _motors = motors;
+}
 
 //both arms close, delay 1 second, then open
-void TestMode::testArms(ServoArm arm) {
-    arm.close();
+void TestMode::testArms() {
+    _arm.close();
     delay(1000);
-    arm.open();
+    _arm.open();
 } 
 
 //test 4 bar movement up and down
-void TestMode::testFourBar(LiftCan cl) {
-   cl.lift(20);
+void TestMode::testFourBar() {
+   _cl.lift(20);
    delay(1000);
-   cl.lower(20);
+   _cl.lower(20);
    delay(1000);
 }
 
 //arms close, lifts up, bump, lifts down, arms open
-void TestMode::testDeposit(ServoArm arm, LiftCan cl) {
-   arm.close();
+void TestMode::testDeposit() {
+   _arm.close();
    delay(1000);
-   cl.lift(20);
+   _cl.lift(20);
    delay(1000);
-   arm.bump();
+   _arm.bump();
    delay(1000);
-   cl.lower(20);
+   _cl.lower(20);
    delay(1000);
-   arm.open();
+   _arm.open();
    delay(1000);
 }
 
-void TestMode::testBackFlap(ServoBackFlap bf) {
+void TestMode::testBackFlap() {
 
 }
 
 //move straight for 4 seconds
-void TestMode::testMoveStraight(MotorControl motors) {
-    motors.move(400,400);
+void TestMode::testMoveStraight() {
+    _motors.move(400,400);
     delay(4000);
-    motors.move(0,0);
+    _motors.move(0,0);
 }
 
-void TestMode::testMoveBackwards(MotorControl motors) {
-    motors.move(-400,-400);
+void TestMode::testMoveBackwards() {
+    _motors.move(-400,-400);
     delay(4000);
-    motors.move(0,0);
+    _motors.move(0,0);
 }
 
-void TestMode::testTurnLeft(MotorControl motors) {
-    motors.move(-400,400);
+void TestMode::testTurnLeft() {
+    _motors.move(-400,400);
     delay(4000);
-    motors.move(0,0);
+    _motors.move(0,0);
 }
 
-void TestMode::testTurnRight(MotorControl motors) {
-    motors.move(400,-400);
+void TestMode::testTurnRight() {
+    _motors.move(400,-400);
     delay(4000);
-    motors.move(0,0);
+    _motors.move(0,0);
 }
 
 //infinite loop so only function is to display the distance the sonar is reading 
