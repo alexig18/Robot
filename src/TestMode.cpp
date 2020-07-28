@@ -1,5 +1,5 @@
 /*
-Library to sense tape.
+Library for testing.
 */
 
 
