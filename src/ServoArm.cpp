@@ -10,7 +10,7 @@ ServoArm::ServoArm()
 {}
 
 //perform setup
-void ServoArm::begin(int pinLeft, int pinRight)
+void ServoArm::begin(PinName pinLeft, PinName pinRight)
 {
     _servoR.attach(pinRight);
     _servoL.attach(pinLeft);

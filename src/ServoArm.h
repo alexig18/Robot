@@ -5,13 +5,13 @@ Library to control servo arms
 #define ServoArm_h
 
 #include "Arduino.h"
-#include "Servo.h"
+#include "Serv.h"
 
 class ServoArm
 {
     public:
     ServoArm();
-    void begin(int rightArmPin, int leftArmPin);
+    void begin(PinName rightArmPin, PinName leftArmPin);
     void closeR();
     void closeL();
     void openR();
@@ -22,8 +22,8 @@ class ServoArm
     void setAngle(int angle);
     private:
     // the underscore helps show the variable is private
-    Servo _servoR;
-    Servo _servoL;
+    Serv _servoR;
+    Serv _servoL;
     int _armAngle = 160;
 };
 

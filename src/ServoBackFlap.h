@@ -5,13 +5,13 @@ Library to control servo backflap of upper storage
 #define ServoBackFlap_h
 
 #include "Arduino.h"
-#include "Servo.h"
+#include "Serv.h"
 
 class ServoBackFlap
 {
     public:
     ServoBackFlap();
-    void begin(int pin);
+    void begin(PinName pin);
     void open();
     void close();
     private:

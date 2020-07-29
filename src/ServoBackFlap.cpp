@@ -1,8 +1,8 @@
 #include <ServoBackFlap.h>
 #define openAng 0
-#define closedAng 130
+#define closedAng 125
 
-Servo servo;
+Serv servo;
 
 // defauly constructor
 ServoBackFlap::ServoBackFlap()
@@ -10,7 +10,7 @@ ServoBackFlap::ServoBackFlap()
 
 //initialise
 
-void ServoBackFlap::begin(int pin)
+void ServoBackFlap::begin(PinName pin)
 {
     servo.attach(pin);
     servo.write(closedAng);

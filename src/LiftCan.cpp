@@ -11,10 +11,10 @@ int _count = 0;
 LiftCan::LiftCan() {}
 
 
-Servo lservo;
-Servo rservo;
+Serv lservo;
+Serv rservo;
 
-void LiftCan::begin(int pinleft, int pinright)
+void LiftCan::begin(PinName pinleft, PinName pinright)
 {
     rservo.attach(pinright);
     lservo.attach(pinleft);
