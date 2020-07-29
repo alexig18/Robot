@@ -13,23 +13,25 @@
 #define OLED_RESET 	-1 // This display does not have a reset pin accessible
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-//#define MOTOR_L_R PB_6
-//#define MOTOR_L_L PB_7
-#define MOTOR_R_L PB_8
-#define MOTOR_R_R PB_9
+#define MOTOR_L_R PB_1
+#define MOTOR_L_L PB_0
+#define MOTOR_R_L PA_7
+#define MOTOR_R_R PA_6
 
 #define PMWFREQ 1000
-#define L4 PB_1
-#define R4 PB_0
-#define LA PA_7
-#define RA PA_6
-#define BACK PA_3
+#define L4 PA_0
+#define R4 PA_1
+#define LA PA_2
+#define RA PA_3
+#define BACK PA_8
+
+#define TAPE PB12
 
 #define Ltrigger PB4
 #define Rtrigger PB3
 
-#define echo PA5
-#define trigger PA4
+#define echo PB14
+#define trigger PB13
 #define MAX_DISTANCE 300
 int count = 0;
 
@@ -56,7 +58,7 @@ void setup() {
   cl.begin(L4, R4);
   arm.begin(LA, RA);
   back.begin(BACK);
-  //motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PMWFREQ);
+  motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PMWFREQ);
   
   pinMode(Ltrigger, INPUT_PULLUP);
   pinMode(Rtrigger, INPUT_PULLUP);
@@ -67,7 +69,6 @@ void setup() {
   display.display();
   delay(2000);
 
-  // Displays "Hello world!" on the screen
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
