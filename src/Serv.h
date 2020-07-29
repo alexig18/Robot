@@ -16,8 +16,4 @@ class Serv
     PinName _pinS;
 };
 
-<<<<<<< HEAD
 #endif
-=======
-#endif
->>>>>>> 31f66aa5499a8f170976daa4939d9550ff8f0b5f
