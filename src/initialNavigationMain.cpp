@@ -1,4 +1,4 @@
-#include <Wire.h>
+/**#include <Wire.h>
 #include <Adafruit_SSD1306.h>
 #include <Servo.h>
 #include <Arduino.h>
@@ -295,4 +295,4 @@ if(sonar.ping_cm() <= 10){
 //   motors.move(0, 0);
 //   delay(500);
 //   back.close();
-
+**/

@@ -19,10 +19,7 @@ class MotorControl
     
     private:
     // the underscore helps show the variable is private
-    PinName _fOutLM;
-    PinName _bOutLM;
-    PinName _fOutRM;
-    PinName _bOutRM;
+    
 
     int _frequency;
     int _leftFreq;

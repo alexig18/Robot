@@ -2,6 +2,11 @@
 #include "MotorControl.h"
 #include "ctime"
 
+PinName _fOutLM;
+PinName _bOutLM;
+PinName _fOutRM;
+PinName _bOutRM;
+
 MotorControl::MotorControl(){}
 
 void MotorControl::begin(int lPinLM, int rPinLM, int lPinRM, int rPinRM, int freq)

@@ -22,9 +22,8 @@ class ServoArm
     void setAngle(int angle);
     private:
     // the underscore helps show the variable is private
-    Serv _servoR;
-    Serv _servoL;
-    int _armAngle = 160;
+    
+    
 };
 
 #endif

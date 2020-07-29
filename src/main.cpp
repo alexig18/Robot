@@ -19,11 +19,14 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define MOTOR_R_R PB_9
 
 #define PMWFREQ 1000
-#define L4 PB1
-#define R4 PB0
-#define LA PA7
-#define RA PA6
-#define BACK PA3
+#define L4 PB_1
+#define R4 PB_0
+#define LA PA_7
+#define RA PA_6
+#define BACK PA_3
+
+#define Ltrigger PB4
+#define Rtrigger PB3
 
 #define echo PA5
 #define trigger PA4
@@ -55,7 +58,8 @@ void setup() {
   back.begin(BACK);
   //motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PMWFREQ);
   
-  
+  pinMode(Ltrigger, INPUT_PULLUP);
+  pinMode(Rtrigger, INPUT_PULLUP);
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
  
@@ -71,24 +75,23 @@ void setup() {
 }
 
 void loop() {
-count++;
+display.setCursor(0,0);
 
-motors.move(400, 400);
+  if(digitalRead(Ltrigger)){
+    display.println("left can!");
+    display.display();
+    delay(1000);
+    display.clearDisplay();
 
-if(sonar.ping_cm() < 30){
-  delay(500);
-  canDeposit();
-  delay(500);
-}
+  }
+  display.setCursor(0,0);
 
-if(count== 1000){
-  motors.move(0, 0);
-  delay(500);
-  motors.move(400, -400);
-  delay(500);
-
-
-  count = 0;
+   if(digitalRead(Rtrigger)){
+    display.println("right can!");
+    display.display();
+    delay(1000);
+    display.clearDisplay();
+  }
 }
 
 
@@ -100,5 +103,5 @@ if(count== 1000){
 //arm.close();
 //delay(10000);
 //arm.bump();
-}
+//}
 

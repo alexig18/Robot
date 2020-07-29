@@ -5,6 +5,9 @@
 #define Lopen 180
 #define Ropen 0
 
+Serv _servoR;
+Serv _servoL;
+
 //default constructor
 ServoArm::ServoArm()
 {}
