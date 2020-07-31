@@ -82,8 +82,11 @@ void setup() {
   display.setCursor(0,0);
 }
 
+// STATES
 bool calibrationMode = true;
 bool returnHome = false;
+bool atHome = false;
+
 int BACKGROUND = 0;
 // the reading from the farthest dist from the beacon
 int MAXLIGHT = 730;
@@ -127,8 +130,18 @@ void pidHome() {
     motors.move(motors.leftSpeed()+g, motors.rightSpeed()-g);
     
     lastError = error;
-    }
+  }
+  returnHome = false;
+  atHome = true;
 }
+
+// Can dumping sequence
+void canDump() {
+  // move back a bit
+  // open backflap
+  // shake a bit? 
+}
+
 
 void loop() {
   display.setCursor(0, 0);
@@ -172,10 +185,12 @@ void loop() {
       // try both: stop when vals are almost equal, stop when one detector falls bellow background
     }
     motors.move(0, 0);
-
     pidHome();
-
-    //TEST DTYSUM ADD TO ONE WHEEL SUB FROM OTHER
-
   }
+
+  if(atHome) {
+    // create can dumping sequence
+    // open backflap, shake a bit (?) etc.
+  }
+
 }
