@@ -26,6 +26,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define BACK PA_8
 
 #define TAPE PB12
+#define Leye PA5
+#define Reye PA4
 
 #define Ltrigger PB4
 #define Rtrigger PB3
@@ -40,6 +42,9 @@ ServoArm arm;
 ServoBackFlap back;
 MotorControl motors;
 NewPing sonar(trigger, echo,MAX_DISTANCE );
+
+int LEFTSPEED; // keep track of speed of motor rotation 'speeds'
+int RIGHTSPEED;
 
 
 void canDeposit(){
@@ -62,12 +67,14 @@ void setup() {
   
   pinMode(Ltrigger, INPUT_PULLUP);
   pinMode(Rtrigger, INPUT_PULLUP);
+  pinMode(Leye, INPUT);
+  pinMode(Reye, INPUT);
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
  
   // Displays Adafruit logo by default. call clearDisplay immediately if you don't want this.
   display.display();
-  delay(2000);
+  delay(1000);
 
   display.clearDisplay();
   display.setTextSize(1);
@@ -75,34 +82,115 @@ void setup() {
   display.setCursor(0,0);
 }
 
-void loop() {
-display.setCursor(0,0);
+// STATES
+bool calibrationMode = true;
+bool returnHome = false;
+bool atHome = false;
 
-  if(digitalRead(Ltrigger)){
-    display.println("left can!");
-    display.display();
-    delay(1000);
-    display.clearDisplay();
+int BACKGROUND = 0;
+// the reading from the farthest dist from the beacon
+int MAXLIGHT = 730;
 
+int SAMPLES = 70;
+//int samplewave[];
+int tot = 0;
+
+// IR control
+// collects IR samples from IR Sensor and get average
+// returns an array with average of left eye in position 0, right eye in position 1
+int * avgSamples() {
+  int leftTot;
+  int rightTot;
+  for(int i=0; i<SAMPLES; i++){
+    leftTot = leftTot + analogRead(Leye);
+    rightTot = rightTot + analogRead(Reye);
   }
-  display.setCursor(0,0);
+  int avg[2] = {leftTot/SAMPLES, rightTot/SAMPLES};
+  return avg;
+}
 
-   if(digitalRead(Rtrigger)){
-    display.println("right can!");
-    display.display();
-    delay(1000);
-    display.clearDisplay();
+int KP = 1; // proportionality constant
+int KD = 1; // derivative constant
+
+// PID control for IR navigation
+void pidHome() {
+  int lastError = 0; // stores last error measured
+  int* avg; // array with left and right IR sensor averages
+  int p, g, d, intensity;
+  
+  while(!digitalRead(TAPE)) { // while not running into tape
+    avg = avgSamples();
+    // NEED TO SCALE TO REASONABLE VALUE FOR MOTOR INPUT
+    // left, right
+    int error = avg[0]-avg[1];
+    int intensity = avg[0]+avg[1];
+    p = KP*error; // how fast you react to error 
+    d = KD*(error-lastError); 
+    g = (p+d)/(1+sqrt(intensity));
+    motors.move(motors.leftSpeed()+g, motors.rightSpeed()-g);
+    
+    lastError = error;
   }
+  returnHome = false;
+  atHome = true;
+}
+
+// Can dumping sequence
+void canDump() {
+  // move back a bit
+  // open backflap
+  // shake a bit? 
 }
 
 
+void loop() {
+  display.setCursor(0, 0);
+  display.clearDisplay();
 
-//delay(5000);
-//canDeposit();
-//delay(5000);
+  for(int i=0; i<SAMPLES; i++){
+    tot = tot + analogRead(Leye);
+  }
+  int average = tot/SAMPLES;
 
-//arm.close();
-//delay(10000);
-//arm.bump();
-//}
+  display.println("Average: ");
+  display.println(average);
+  display.display();
+  delay(50);
 
+  average = 0;
+  tot = 0;
+  count = 0;
+  while(calibrationMode && count < 100) {
+    if(BACKGROUND == 0) {
+      BACKGROUND = (analogRead(Leye)+analogRead(Reye))/2;
+    } else {
+      BACKGROUND = (BACKGROUND + analogRead(Leye)+analogRead(Reye))/3;
+    }
+    count++;
+  }
+  display.println("amb: ");
+  display.print(BACKGROUND);
+  display.display();
+
+  calibrationMode = false;
+  returnHome = true;
+
+  while(returnHome){
+    motors.move(0, 0);
+    // true = left || false = right
+    // boolean triggered;
+
+    motors.move(-450, 450);
+    while(analogRead(Leye) >= BACKGROUND  &&  analogRead(Reye) >= BACKGROUND ){ // will rotate until both eyes see IR
+      // try both: stop when vals are almost equal, stop when one detector falls bellow background
+    }
+    motors.move(0, 0);
+    pidHome();
+  }
+
+  if(atHome) {
+    // create can dumping sequence
+    // open backflap, shake a bit (?) etc.
+  }
+
+}
