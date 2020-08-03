@@ -86,12 +86,17 @@ void setup() {
 bool calibrationMode = true;
 bool returnHome = false;
 bool atHome = false;
+boolean Search = true;
 
 //EDITABLE CONSTANTS
-int BACKGROUND = 0;
-int KP = 1; // proportionality constant
-int KD = 1; // derivative constant
-volatile int SAMPLE = 200;
+int BACKGROUND = 0; // ambient radiation val
+int KP = 25; // proportionality constant
+int KD = 5; // derivative constant
+
+volatile int SAMPLE = 220; // sample size for eyes LARGER = less sensitive less val oscillations
+// SMALLER = more sensitive but larger val oscillations
+int bsamples = 100; // sample size for background val - LARGER means steady background val
+
 
 // IR control
 // collects IR samples from IR Sensor and get average
@@ -114,7 +119,7 @@ int rtot = 0;
 //Updates BACKGROUND constant with an average of bsample size
 void backgroundMed(){
 
-  int bsamples = 100;
+  
   BACKGROUND = 0;
   for(int i =0; i<bsamples; i++){
     BACKGROUND = (BACKGROUND + (analogRead(Leye)+analogRead(Reye))/2);
@@ -129,20 +134,56 @@ void pidHome() {
   int lastError = 0; // stores last error measured
   std::array<int, 2> avg; // array with left and right IR sensor averages
   int p, g, d, intensity;
-  
+  motors.move(-400, -400);\
   while(!digitalRead(TAPE)) { // while not running into tape
+    
     avg = avgSamples();
+    display.clearDisplay();
     // NEED TO SCALE TO REASONABLE VALUE FOR MOTOR INPUT
     // left, right
     int error = avg[0]-avg[1];
     int intensity = avg[0]+avg[1];
     p = KP*error; // how fast you react to error 
     d = KD*(error-lastError); 
-    g = (p+d)/(1+sqrt(intensity));
-    motors.move(motors.leftSpeed()+g, motors.rightSpeed()-g);
+    g = (p+d)/(sqrt(intensity));
+    if(avg[0] >= avg[1]){
+        motors.move(-350+g, -350-g);
+
+        display.setCursor(0, 0);
+    display.println("left dty cycle");
+    display.setCursor(95, 0);
+    display.println(-350+g);
+   display.setCursor(0, 15);
+  display.println("right dty cycle");
+    display.setCursor(95, 15);
+    display.println(-350-g);
+    } 
     
+    else{
+        motors.move(-350-g, -350+g);
+
+        display.setCursor(0, 0);
+    display.println("left dty cycle");
+    display.setCursor(95, 0);
+    display.println(-350-g);
+   display.setCursor(0, 15);
+  display.println("right dty cycle");
+    display.setCursor(95, 15);
+    display.println(-350+g);
+    }
+  
+    
+  
+    display.println(g);
+
+    display.display();
+
     lastError = error;
+    g=0;
+    p=0;
+    d=0;
   }
+
   returnHome = false;
   atHome = true;
 }
@@ -153,209 +194,86 @@ void canDump() {
   // open backflap
   // shake a bit? 
 }
-boolean Sent = true;
-int Minl = 2000;
-  int Minr = 2000;
+
+
 
 
 void loop() {
 
-  
-  std::array<int, 2> avg = avgSamples();
-
-  
-  /**motors.move(-300, 300);
-  for(int i =0; i<200; i++){
-    avg = avgSamples();
-    if(avg[0] < Minl) Minl = avg[0];
-    if(avg[1] < Minr) Minr = avg[1];
+  //get very stable background value before searching
+  for(int i =0;i<3;i++){
+    backgroundMed();
   }
-
-  motors.move(300, -300);
-}
-
-  avg = avgSamples();
-
-  while(avg[0] >= Minl && avg[1] >= Minr && Sent == true){ // will rotate until both eyes see IR
-     avg = avgSamples();
-
-      display.setCursor(0, 0);
-      display.clearDisplay();
-
-     /** if(cot == 15){
-        backgroundMed();
-        
-        //display.println("b-set");
-        //display.display();
-        cot = 0;
-      }
-      //display.println(BACKGROUND-4);
-      display.println(Minl);
-      display.setCursor(40, 0);
-      display.println(Minr);
-      display.setCursor(0, 20);
-      display.println(avg[0]);
-
-      display.println(avg[1]);
-
-      display.display();
-      //cot++;
-
-    }
-   
-    motors.move(0, 0);
-     Sent = false;
-    display.clearDisplay();
-        display.println("FOUND");
-        display.display();**/
-
-  //convolution code
-  /**int SAMPLE = 70;
-    int Laverage, Raverage, start_time, elapsed_time =0;
-
-    int * RIRdata = new int[SAMPLE];
-    int *  LIRdata = new int[SAMPLE];
-    int * LWaveform = new int[SAMPLE];
-    int * RWaveform = new int[SAMPLE];
-    int * Ronekcorr = new int[SAMPLE];
-    int * Lonekcorr = new int[SAMPLE];
-    int * onek = new int[SAMPLE*2];
-    
-    start_time=millis();
-    for (int i=0;i<SAMPLE; i++)
-      {
-      LIRdata[i] = analogRead(Leye);
-      RIRdata[i] = analogRead(Reye);
-      }
-    elapsed_time=millis()-start_time; //count the number of milliseconds to acquire #SAMPLEs
-    for (int i=0;i<SAMPLE; i++)
-      {
-      Laverage+=LIRdata[i];
-      Raverage+=RIRdata[i];
-      }
-    Laverage = (long) (double)Laverage/SAMPLE;
-    Raverage = (long) (double)Raverage/SAMPLE; //DC average of reading
-    double onekT= SAMPLE/(double) elapsed_time;
-    for (int i=0;i<2*SAMPLE;i++)
-      {
-      onek[i]=sin(i*TWO_PI/onekT);
-      //generate 1khz waveforms
-      }
-    for (int i=0;i<SAMPLE; i++)
-      {
-      LWaveform[i]=LIRdata[i]-(int)Laverage;  
-      RWaveform[i]=RIRdata[i]-(int)Raverage; //subtract DC, square, and sum
-      }
-    for (int k=0; k<SAMPLE; k++)
-    {
-      Lonekcorr[k]=0;
-      Ronekcorr[k]=0;
-      for (int i=0;i<SAMPLE;i++)
-      {
-      Lonekcorr[k]+=LWaveform[i]*onek[k+i];
-      Ronekcorr[k]+=RWaveform[i]*onek[k+i];  //cross correlate waveform with 1 and 10k
-      }
-    }
-    int Lmax_one=0;
-    int Rmax_one=0;
-    for (int i=0;i<SAMPLE;i++)
-      {
-      if (Lonekcorr[i]>Lmax_one) Lmax_one=Lonekcorr[i];
-      if (Ronekcorr[i]>Rmax_one) Rmax_one=Ronekcorr[i];// find correlation peaks
-      }
-  //  threshold = analogRead(DETECT_THRESHOLD);
-    display.clearDisplay();
-    display.setCursor(0,0);
-    display.println(Rmax_one);
-    display.setCursor(40,0);
-    display.println(Lmax_one);
-   // display.println("Thresh= ");
-    
-    //display.println((int) threshold/50);
-
-   // if ((max_one*500<FREQ_THRESH_ONE*threshold)&&(max_ten*500<FREQ_THRESH_TEN*threshold))
-    //{
-    //display.println("No signal");
-   /// }
-    
-    
-
-       // display.println("1 kHz");
-      
-    
-
-    display.display();**/
-
-
-
-  //average detection code vv
-  display.setCursor(0, 0);
-  display.clearDisplay();
-
-  backgroundMed();
   returnHome = true;
-  
-
+ 
+  //state searches and returns to bin with can payload
   while(returnHome){
     motors.move(0, 0);
     display.setCursor(0, 0);
-    display.clearDisplay();
 
-    if(Sent == true){
-      motors.move(-325,325);
-      display.println("Searching");
-      display.display();
-    }
-
+    //general variables
     std::array<int, 2> avg = avgSamples();
     int cot = 0;
 
     // inertia control variables
     double startTime = millis();
-    int interval = 400; // number of millis in a cycle
+    int moveinterval = 400; // number of millis in move cycle
+    int stopinterval = 225; // number of millis in stop cycle
 
-    while(avg[0] >= BACKGROUND-3 && avg[1] >= BACKGROUND-3 && Sent == true){ // will rotate until both eyes see IR
-      // try both: stop when vals are almost equal, stop when one detector falls bellow background
+    int torqueVal = 425; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
+
+    // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
+    // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
+    int offset = 4;
+    // try to minimise this val ^^
+    while( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset && Search == true){ 
+      //inertial controll code
       double timeNow = millis();
-      if (timeNow-startTime > interval/3) {
-        motors.move(-325,325);
-      } else if(timeNow-startTime < interval/3) {
-        motors.move(0,0);
-      } else if (timeNow-startTime > interval) {
+      if(timeNow-startTime > moveinterval+stopinterval){
         startTime = millis();
       }
+      else if (timeNow-startTime < moveinterval) {
+        motors.move(torqueVal,-torqueVal);
+      } else if(timeNow-startTime > moveinterval) {
+        motors.move(0,0);
+      } 
+
+      //readval code
       avg = avgSamples();
-
-      display.setCursor(0, 0);
-      display.clearDisplay();
-
-      if(cot == 23){
+      //samples background everyonce in a while so while loop isnt occasionally triggered by eye oscillations
+      //if this val is increased you increase sensitivity with a fine resolution, opposite is true of decreasing it
+      int samplerate = 28;
+      if(cot == samplerate){
         backgroundMed();
-        
-        //display.println("b-set");
-        //display.display();
         cot = 0;
       }
+       cot++;
+
+      //optional display code to debug
+      /**display.setCursor(0, 0);
+      display.clearDisplay();
       display.println(BACKGROUND);
-
       display.println(avg[0]);
-      display.setCursor(20, 20);
+      display.setCursor(12, 20);
       display.println(avg[1]);
-
-      display.display();
-      cot++;
-      count++;
+      display.display();**/
+     
     }
-    
     motors.move(0, 0);
     
-      display.clearDisplay();
+    //optional found display to visually see when the robot has seen the beacon
+      /**display.clearDisplay();
         display.println("FOUND");
-        display.display();
+        display.println(avg[0]);
+        display.println(avg[1]);
+        display.display();**/
+   
+   //ensures you never enter search loop after you have seen the beacon
+   // we should test/ try entering this if we loose sight of the beacon later
+   Search = false;
 
-    Sent = false;
-
-    //pidHome();
+    //starts the move towards the bin
+    pidHome();
   }
 
   if(atHome) {

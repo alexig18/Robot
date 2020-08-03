@@ -47,10 +47,10 @@ void MotorControl::move(int leftmot, int rightmot)
   }
   else if (leftmot == 0 && rightmot == 0) // stopped
   {
-    pwm_start(_fOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-    pwm_start(_bOutLM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-    pwm_start(_fOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT);
-    pwm_start(_bOutRM, _frequency, 0, RESOLUTION_10B_COMPARE_FORMAT); 
+    pwm_start(_fOutLM, 0, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutLM, 0, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_fOutRM, 0, 0, RESOLUTION_10B_COMPARE_FORMAT);
+    pwm_start(_bOutRM, 0, 0, RESOLUTION_10B_COMPARE_FORMAT); 
   }
   else if (leftmot > 0 && rightmot < 0) // turn right
   {
