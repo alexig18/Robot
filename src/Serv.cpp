@@ -1,7 +1,7 @@
 #include <Serv.h>
 
 #define freq 50
-PinName _pinS;
+
 
 
 Serv::Serv(){}
