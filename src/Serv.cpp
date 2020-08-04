@@ -1,7 +1,6 @@
 #include <Serv.h>
 
 #define freq 50
-PinName _pinS;
 
 
 Serv::Serv(){}
@@ -10,7 +9,7 @@ void Serv::attach(PinName pin){
     
      _pinS = pin;
 
-    pinMode(_pinS, OUTPUT);
+    pinMode(pin, OUTPUT);
 
 }
 

@@ -15,8 +15,9 @@ ServoArm::ServoArm()
 //perform setup
 void ServoArm::begin(PinName pinLeft, PinName pinRight)
 {
-    _servoR.attach(pinRight);
+    
     _servoL.attach(pinLeft);
+    _servoR.attach(pinRight);
     _servoR.write(closedR);
     _servoL.write(closedL);
     delay(500);

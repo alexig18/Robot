@@ -16,8 +16,8 @@ Serv rservo;
 
 void LiftCan::begin(PinName pinleft, PinName pinright)
 {
-    rservo.attach(pinright);
     lservo.attach(pinleft);
+    rservo.attach(pinright);
     rservo.write(RLBOUND);
     lservo.write(LLBOUND);
 }

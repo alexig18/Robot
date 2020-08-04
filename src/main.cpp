@@ -11,7 +11,7 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET 	-1 // This display does not have a reset pin accessible
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+//Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define MOTOR_L_R PB_1
 #define MOTOR_L_L PB_0
@@ -43,10 +43,6 @@ ServoBackFlap back;
 MotorControl motors;
 NewPing sonar(trigger, echo,MAX_DISTANCE );
 
-int LEFTSPEED; // keep track of speed of motor rotation 'speeds'
-int RIGHTSPEED;
-
-
 void canDeposit(){
   arm.close();
   delay(1000);
@@ -71,16 +67,19 @@ void setup() {
   pinMode(Leye, INPUT);
   pinMode(Reye, INPUT);
 
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+ // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
  
   // Displays Adafruit logo by default. call clearDisplay immediately if you don't want this.
-  display.display();
+ /** display.display();
   delay(1000);
 
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,0);
+  display.setCursor(0,0);**/
+
+
+
 }
 
 // STATES
@@ -135,7 +134,7 @@ void pidHome() {
   while(digitalRead(TAPE) == 0) { // while not running into tape
     
     avg = avgSamples();
-    display.clearDisplay();
+    //display.clearDisplay();
     // NEED TO SCALE TO REASONABLE VALUE FOR MOTOR INPUT
     // left, right
     int error = avg[0]-avg[1];
@@ -146,33 +145,33 @@ void pidHome() {
     if(avg[0] >= avg[1]){
         motors.move(-350+g, -350-g);
 
-        display.setCursor(0, 0);
+       /** display.setCursor(0, 0);
     display.println("left dty cycle");
     display.setCursor(95, 0);
     display.println(-350+g);
    display.setCursor(0, 15);
   display.println("right dty cycle");
     display.setCursor(95, 15);
-    display.println(-350-g);
+    display.println(-350-g);**/
     } 
     
     else{
         motors.move(-350-g, -350+g);
 
-        display.setCursor(0, 0);
+       /** display.setCursor(0, 0);
     display.println("left dty cycle");
     display.setCursor(95, 0);
     display.println(-350-g);
    display.setCursor(0, 15);
   display.println("right dty cycle");
     display.setCursor(95, 15);
-    display.println(-350+g);
+    display.println(-350+g);**/
     }
   
     
   
-    display.println(g);
-    display.display();
+   // display.println(g);
+   // display.display();
 
     lastError = error;
     g=0;
@@ -195,14 +194,16 @@ void canDump() {
 
 void loop() {
 
-  //get very stable background value before searching
+ 
+  canDeposit();
+  delay(3000);
+
+  //state searches and returns to bin with can payload
+  while(returnHome){
+     //get very stable background value before searching
   for(int i =0;i<4;i++){
     backgroundMed();
   }
-  returnHome = true;
- 
-  //state searches and returns to bin with can payload
-  while(returnHome){
     motors.move(0, 0);
     //display.setCursor(0, 0);
 
@@ -245,7 +246,7 @@ void loop() {
        cot++;
 
       //optional display code to debug
-      display.setCursor(0, 0);
+      /**display.setCursor(0, 0);
       display.clearDisplay();
       display.println("Amb: ");
       display.setCursor(40, 0);
@@ -256,7 +257,7 @@ void loop() {
       display.println(avg[0]);
       display.setCursor(90,30);
       display.println(avg[1]);
-      display.display();
+      display.display();**/
      
     }
     motors.move(0, 0);
