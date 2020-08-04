@@ -36,7 +36,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define trigger PB13
 #define MAX_DISTANCE 300
 int count = 0;
-int dMS = 400; // default motor speed
+int dMS = 325; // default motor speed
 
 LiftCan cl;
 ServoArm arm;
@@ -84,7 +84,7 @@ void setup() {
   display.setCursor(0,0);
 }
 
-// IR NAVIGATION STATES -- default
+// IR NAVIGATION STATES -- default when not in IR nav state
 bool calibrationMode = true;
 bool returnHome = false;
 bool atHome = false;
@@ -208,7 +208,7 @@ void pidHome() {
 
   // step one; find beacon by spinning
   spinSearch();
-  motors.move(-400, -400);
+  motors.move(-dMS, -dMS);
   
   while (returnHome) { // while not running into tape
 
@@ -226,7 +226,7 @@ void pidHome() {
     if (avg[0] > BACKGROUND-offset && avg[1] > BACKGROUND-offset) { // makes sure at least one eye is on the beacon at all times, otherwise initiates spin sequence
       spinSearch();
     } else if(avg[0] >= avg[1]){
-      motors.move(-350+g, -350-g);
+      motors.move(-dMS+g, -dMS-g);
       // display.setCursor(0, 0);
       // display.println("left dty cycle");
       // display.setCursor(95, 0);
@@ -236,7 +236,7 @@ void pidHome() {
       // display.setCursor(95, 15);
       // display.println(-350-g);
     } else {
-      motors.move(-350-g, -350+g);
+      motors.move(-dMS-g, -dMS+g);
       // display.setCursor(0, 0);
       // display.println("left dty cycle");
       // display.setCursor(95, 0);
