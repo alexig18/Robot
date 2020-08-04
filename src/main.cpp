@@ -36,6 +36,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define trigger PB13
 #define MAX_DISTANCE 300
 int count = 0;
+int dMS = 400; // default motor speed
 
 LiftCan cl;
 ServoArm arm;
@@ -83,12 +84,12 @@ void setup() {
   display.setCursor(0,0);
 }
 
-// STATES
+// IR NAVIGATION STATES -- default
 bool calibrationMode = true;
 bool returnHome = false;
 bool atHome = false;
-boolean Search = true;
-bool bin = true;
+bool Search = false;
+bool bin = false;
 
 //EDITABLE CONSTANTS
 int BACKGROUND = 0; // ambient radiation val
@@ -103,16 +104,16 @@ int bsamples = 170; // sample size for background val - LARGER means steady back
 // collects IR samples from IR Sensor and get average
 // returns an array with average of left eye in position 0, right eye in position 1
 std::array<int, 2> avgSamples() {
-int ltot = 0;
-int rtot = 0;
+  int ltot = 0;
+  int rtot = 0;
   std::array<int, 2> avg;
 
   for(int i=0; i<SAMPLE; i++){
     ltot = ltot + analogRead(Leye);
     rtot = rtot + analogRead(Reye);
   }
-   avg[0] = ltot/SAMPLE;
-   avg[1] = rtot/SAMPLE;
+  avg[0] = ltot/SAMPLE;
+  avg[1] = rtot/SAMPLE;
 
   return avg;
 }
@@ -126,16 +127,94 @@ void backgroundMed(){
   BACKGROUND = BACKGROUND/bsamples;
 }
 
-// PID control for IR navigation
+// Sets PID control states for IR navigation
+void iRPidState() {
+  calibrationMode = true;
+  returnHome = true;
+  atHome = false;
+  Search = true;
+  bin = true;
+}
+
+// in-place spin sequence to locate beacon
+void spinSearch() {
+  //general variables
+  std::array<int, 2> avg = avgSamples();
+  int cot = 0;
+  // inertia control variables
+  double startTime = millis();
+  int moveinterval = 400; // number of millis in move cycle
+  int stopinterval = 225; // number of millis in stop cycle
+
+  int torqueVal = 430; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
+
+  // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
+  // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
+  int offset = 4;
+  // try to minimise this val ^^
+  while(( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset) && Search == true) { 
+      
+    //inertial control code
+    double timeNow = millis();
+    if (timeNow-startTime > moveinterval+stopinterval){
+      startTime = millis();
+    } else if (timeNow-startTime < moveinterval) {
+      motors.move(torqueVal,-torqueVal);
+    } else if(timeNow-startTime > moveinterval) {
+      motors.move(0,0);
+    } 
+
+    //readval code
+    avg = avgSamples();
+    
+    // samples background everyonce in a while so while loop isnt occasionally triggered by eye oscillations
+    // if this val is increased you increase sensitivity with a fine resolution, opposite is true of decreasing it
+    // ensures that uncontrollable light sources won't trigger the eyes
+    int samplerate = 25;
+    if (cot == samplerate){
+       backgroundMed();
+      cot = 0;
+    }
+    cot++;
+
+      //optional display code to debug
+      // display.setCursor(0, 0);
+      // display.clearDisplay();
+      // display.println("Amb: ");
+      // display.setCursor(40, 0);
+      // display.println(BACKGROUND-offset);
+      // display.setCursor(0, 20);
+      // display.println("Left           Right");
+      // display.setCursor(0, 30);
+      // display.println(avg[0]);
+      // display.setCursor(90,30);
+      // display.println(avg[1]);
+      // display.display();
+    }
+}
+
+// navigates robot home
 void pidHome() {
+  if(!returnHome) { // if not in correct mode, exit method
+    return;
+  }
   int lastError = 0; // stores last error measured
   std::array<int, 2> avg; // array with left and right IR sensor averages
   int p, g, d, intensity;
+  
+  // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
+  // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
+  int offset = 4;
+
+  // step one; find beacon by spinning
+  spinSearch();
   motors.move(-400, -400);
-  while(digitalRead(TAPE) == 0) { // while not running into tape
-    
+  
+  while (returnHome) { // while not running into tape
+
     avg = avgSamples();
-    display.clearDisplay();
+
+    // display.clearDisplay();
     // NEED TO SCALE TO REASONABLE VALUE FOR MOTOR INPUT
     // left, right
     int error = avg[0]-avg[1];
@@ -143,45 +222,47 @@ void pidHome() {
     p = KP*error; // how fast you react to error 
     d = KD*(error-lastError); 
     g = (p+d)/(sqrt(intensity));
-    if(avg[0] >= avg[1]){
-        motors.move(-350+g, -350-g);
-
-        display.setCursor(0, 0);
-    display.println("left dty cycle");
-    display.setCursor(95, 0);
-    display.println(-350+g);
-   display.setCursor(0, 15);
-  display.println("right dty cycle");
-    display.setCursor(95, 15);
-    display.println(-350-g);
-    } 
     
-    else{
-        motors.move(-350-g, -350+g);
-
-        display.setCursor(0, 0);
-    display.println("left dty cycle");
-    display.setCursor(95, 0);
-    display.println(-350-g);
-   display.setCursor(0, 15);
-  display.println("right dty cycle");
-    display.setCursor(95, 15);
-    display.println(-350+g);
+    if (avg[0] > BACKGROUND-offset && avg[1] > BACKGROUND-offset) { // makes sure at least one eye is on the beacon at all times, otherwise initiates spin sequence
+      spinSearch();
+    } else if(avg[0] >= avg[1]){
+      motors.move(-350+g, -350-g);
+      // display.setCursor(0, 0);
+      // display.println("left dty cycle");
+      // display.setCursor(95, 0);
+      // display.println(-350+g);
+      // display.setCursor(0, 15);
+      // display.println("right dty cycle");
+      // display.setCursor(95, 15);
+      // display.println(-350-g);
+    } else {
+      motors.move(-350-g, -350+g);
+      // display.setCursor(0, 0);
+      // display.println("left dty cycle");
+      // display.setCursor(95, 0);
+      // display.println(-350-g);
+      // display.setCursor(0, 15);
+      // display.println("right dty cycle");
+      // display.setCursor(95, 15);
+      // display.println(-350+g);
     }
   
-    
-  
-    display.println(g);
-    display.display();
+    // display.println(g);
+    // display.display();
 
     lastError = error;
-    g=0;
-    p=0;
-    d=0;
-  }
 
-  returnHome = false;
-  atHome = true;
+    // checks if beacon is visible when tape found
+    if (digitalRead(TAPE) == 1) {
+      if (avg[0] < BACKGROUND-offset && avg[1] < BACKGROUND-offset ) { // 
+        returnHome = false; // breaks loop
+        atHome = true;
+      } else { // otherwise in wrong place
+        spinSearch();
+      }
+    }
+
+  }
 
   motors.move(0, 0);
 }
@@ -195,71 +276,79 @@ void canDump() {
 
 void loop() {
 
-  //get very stable background value before searching
-  for(int i =0;i<4;i++){
+  // get very stable background value before searching
+  for (int i =0;i < 4;i++) {
     backgroundMed();
-  }
-  returnHome = true;
- 
-  //state searches and returns to bin with can payload
-  while(returnHome){
-    motors.move(0, 0);
+  }  
+  // set IR PID states
+  iRPidState();
+  pidHome();
+
+  // state searches and returns to bin with can payload
+  // while (returnHome) {
+    // motors.move(0, 0);
     //display.setCursor(0, 0);
 
-    //general variables
-    std::array<int, 2> avg = avgSamples();
-    int cot = 0;
+    // //general variables
+    // std::array<int, 2> avg = avgSamples();
+    // int cot = 0;
+    
+    // find beacon
+    // spinSearch();
+    // // inertia control variables
+    // double startTime = millis();
+    // int moveinterval = 400; // number of millis in move cycle
+    // int stopinterval = 225; // number of millis in stop cycle
 
-    // inertia control variables
-    double startTime = millis();
-    int moveinterval = 400; // number of millis in move cycle
-    int stopinterval = 225; // number of millis in stop cycle
+    // int torqueVal = 430; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
 
-    int torqueVal = 430; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
+    // // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
+    // // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
+    // int offset = 4;
+    // // try to minimise this val ^^
+    // while(( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset) && Search == true){ 
+      
+    //   //inertial control code
+    //   double timeNow = millis();
+    //   if (timeNow-startTime > moveinterval+stopinterval){
+    //     startTime = millis();
+    //   }
+    //   else if (timeNow-startTime < moveinterval) {
+    //     motors.move(torqueVal,-torqueVal);
+    //   } else if(timeNow-startTime > moveinterval) {
+    //     motors.move(0,0);
+    //   } 
 
-    // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
-    // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
-    int offset = 4;
-    // try to minimise this val ^^
-    while(( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset) && Search == true){ 
-      //inertial controll code
-      double timeNow = millis();
-      if(timeNow-startTime > moveinterval+stopinterval){
-        startTime = millis();
-      }
-      else if (timeNow-startTime < moveinterval) {
-        motors.move(torqueVal,-torqueVal);
-      } else if(timeNow-startTime > moveinterval) {
-        motors.move(0,0);
-      } 
+    //   //readval code
+    //   avg = avgSamples();
+    //   // samples background everyonce in a while so while loop isnt occasionally triggered by eye oscillations
+    //   // if this val is increased you increase sensitivity with a fine resolution, opposite is true of decreasing it
+    //   // ensures that uncontrollable light sources won't trigger the eyes
+    //   int samplerate = 25;
+    //   if (cot == samplerate){
+    //     backgroundMed();
+    //     cot = 0;
+    //   }
+    //   cot++;
 
-      //readval code
-      avg = avgSamples();
-      //samples background everyonce in a while so while loop isnt occasionally triggered by eye oscillations
-      //if this val is increased you increase sensitivity with a fine resolution, opposite is true of decreasing it
-      int samplerate = 25;
-      if(cot == samplerate){
-        backgroundMed();
-        cot = 0;
-      }
-       cot++;
-
-      //optional display code to debug
-      display.setCursor(0, 0);
-      display.clearDisplay();
-      display.println("Amb: ");
-      display.setCursor(40, 0);
-      display.println(BACKGROUND-offset);
-      display.setCursor(0, 20);
-      display.println("Left           Right");
-      display.setCursor(0, 30);
-      display.println(avg[0]);
-      display.setCursor(90,30);
-      display.println(avg[1]);
-      display.display();
+    //   //optional display code to debug
+    //   // display.setCursor(0, 0);
+    //   // display.clearDisplay();
+    //   // display.println("Amb: ");
+    //   // display.setCursor(40, 0);
+    //   // display.println(BACKGROUND-offset);
+    //   // display.setCursor(0, 20);
+    //   // display.println("Left           Right");
+    //   // display.setCursor(0, 30);
+    //   // display.println(avg[0]);
+    //   // display.setCursor(90,30);
+    //   // display.println(avg[1]);
+    //   // display.display();
      
-    }
-    motors.move(0, 0);
+    // }
+    // exits loop when an eye sees the IR beacon
+
+    // motors.move(0, 0);
     
     //optional found display to visually see when the robot has seen the beacon
     /** display.clearDisplay();
@@ -268,18 +357,15 @@ void loop() {
         display.println(avg[1]);
         display.display();**/
    
-   //ensures you never enter search loop after you have seen the beacon
+   // ensures you never enter search loop after you have seen the beacon
    // we should test/ try entering this if we loose sight of the beacon later
-   Search = false;
-
-
-    
-    //starts the move towards the bin
-    if(bin == true){
-    pidHome();
-    bin = false;
-    }
-  }
+  //  Search = false;
+  // //starts the move towards the bin
+  // if (atHome == true){
+  //   pidHome();
+  //   atHome = false;
+  // }
+  // }
   
   if(atHome) {
     // create can dumping sequence
