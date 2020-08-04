@@ -65,6 +65,7 @@ void setup() {
   back.begin(BACK);
   motors.begin(MOTOR_L_L, MOTOR_L_R, MOTOR_R_L, MOTOR_R_R, PMWFREQ);
   
+  pinMode(TAPE, INPUT_PULLUP);
   pinMode(Ltrigger, INPUT_PULLUP);
   pinMode(Rtrigger, INPUT_PULLUP);
   pinMode(Leye, INPUT);
@@ -87,16 +88,16 @@ bool calibrationMode = true;
 bool returnHome = false;
 bool atHome = false;
 boolean Search = true;
+bool bin = true;
 
 //EDITABLE CONSTANTS
 int BACKGROUND = 0; // ambient radiation val
-int KP = 25; // proportionality constant
-int KD = 5; // derivative constant
+int KP = 27; // proportionality constant
+int KD = 10; // derivative constant
 
 volatile int SAMPLE = 220; // sample size for eyes LARGER = less sensitive less val oscillations
 // SMALLER = more sensitive but larger val oscillations
-int bsamples = 100; // sample size for background val - LARGER means steady background val
-
+int bsamples = 170; // sample size for background val - LARGER means steady background val
 
 // IR control
 // collects IR samples from IR Sensor and get average
@@ -118,8 +119,6 @@ int rtot = 0;
 
 //Updates BACKGROUND constant with an average of bsample size
 void backgroundMed(){
-
-  
   BACKGROUND = 0;
   for(int i =0; i<bsamples; i++){
     BACKGROUND = (BACKGROUND + (analogRead(Leye)+analogRead(Reye))/2);
@@ -127,15 +126,13 @@ void backgroundMed(){
   BACKGROUND = BACKGROUND/bsamples;
 }
 
-
-
 // PID control for IR navigation
 void pidHome() {
   int lastError = 0; // stores last error measured
   std::array<int, 2> avg; // array with left and right IR sensor averages
   int p, g, d, intensity;
-  motors.move(-400, -400);\
-  while(!digitalRead(TAPE)) { // while not running into tape
+  motors.move(-400, -400);
+  while(digitalRead(TAPE) == 0) { // while not running into tape
     
     avg = avgSamples();
     display.clearDisplay();
@@ -175,7 +172,6 @@ void pidHome() {
     
   
     display.println(g);
-
     display.display();
 
     lastError = error;
@@ -186,6 +182,8 @@ void pidHome() {
 
   returnHome = false;
   atHome = true;
+
+  motors.move(0, 0);
 }
 
 // Can dumping sequence
@@ -195,13 +193,10 @@ void canDump() {
   // shake a bit? 
 }
 
-
-
-
 void loop() {
 
   //get very stable background value before searching
-  for(int i =0;i<3;i++){
+  for(int i =0;i<4;i++){
     backgroundMed();
   }
   returnHome = true;
@@ -209,7 +204,7 @@ void loop() {
   //state searches and returns to bin with can payload
   while(returnHome){
     motors.move(0, 0);
-    display.setCursor(0, 0);
+    //display.setCursor(0, 0);
 
     //general variables
     std::array<int, 2> avg = avgSamples();
@@ -220,13 +215,13 @@ void loop() {
     int moveinterval = 400; // number of millis in move cycle
     int stopinterval = 225; // number of millis in stop cycle
 
-    int torqueVal = 425; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
+    int torqueVal = 430; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
 
     // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
     // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
     int offset = 4;
     // try to minimise this val ^^
-    while( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset && Search == true){ 
+    while(( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset) && Search == true){ 
       //inertial controll code
       double timeNow = millis();
       if(timeNow-startTime > moveinterval+stopinterval){
@@ -242,7 +237,7 @@ void loop() {
       avg = avgSamples();
       //samples background everyonce in a while so while loop isnt occasionally triggered by eye oscillations
       //if this val is increased you increase sensitivity with a fine resolution, opposite is true of decreasing it
-      int samplerate = 28;
+      int samplerate = 25;
       if(cot == samplerate){
         backgroundMed();
         cot = 0;
@@ -250,20 +245,25 @@ void loop() {
        cot++;
 
       //optional display code to debug
-      /**display.setCursor(0, 0);
+      display.setCursor(0, 0);
       display.clearDisplay();
-      display.println(BACKGROUND);
+      display.println("Amb: ");
+      display.setCursor(40, 0);
+      display.println(BACKGROUND-offset);
+      display.setCursor(0, 20);
+      display.println("Left           Right");
+      display.setCursor(0, 30);
       display.println(avg[0]);
-      display.setCursor(12, 20);
+      display.setCursor(90,30);
       display.println(avg[1]);
-      display.display();**/
+      display.display();
      
     }
     motors.move(0, 0);
     
     //optional found display to visually see when the robot has seen the beacon
-      /**display.clearDisplay();
-        display.println("FOUND");
+    /** display.clearDisplay();
+      display.println("FOUND");
         display.println(avg[0]);
         display.println(avg[1]);
         display.display();**/
@@ -272,10 +272,15 @@ void loop() {
    // we should test/ try entering this if we loose sight of the beacon later
    Search = false;
 
-    //starts the move towards the bin
-    pidHome();
-  }
 
+    
+    //starts the move towards the bin
+    if(bin == true){
+    pidHome();
+    bin = false;
+    }
+  }
+  
   if(atHome) {
     // create can dumping sequence
     // open backflap, shake a bit (?) etc.
