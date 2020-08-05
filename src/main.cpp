@@ -11,7 +11,7 @@
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET 	-1 // This display does not have a reset pin accessible
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+//Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 #define MOTOR_L_R PB_1
 #define MOTOR_L_L PB_0
@@ -36,7 +36,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define trigger PB13
 #define MAX_DISTANCE 300
 int count = 0;
-int dMS = 325; // default motor speed
+int dMS = 370; // default motor speed
 
 #define ITERATIONS 5 //number of pings to take the median of for sonar
 #define LOOP_TIME  200 // time for each iteration of the main loop, measure using oscilloscope in milliSeconds
@@ -55,7 +55,7 @@ bool bin = false;
 
 //EDITABLE CONSTANTS
 int BACKGROUND = 0; // ambient radiation val
-int KP = 27; // proportionality constant
+int KP = 32; // proportionality constant
 int KD = 10; // derivative constant
 
 volatile int SAMPLE = 220; // sample size for eyes LARGER = less sensitive less val oscillations
@@ -175,9 +175,9 @@ void spinSearch() {
 
   // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
   // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
-  int offset = 4;
+  int offset = 3;
   // try to minimise this val ^^
-  while(  Search == true) { 
+  while( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND-offset && Search == true) { 
       
     //inertial control code
     uint32_t timeNow = millis();
@@ -203,18 +203,18 @@ void spinSearch() {
     cot++;
 
       //optional display code to debug
-      display.setCursor(0, 0);
-       display.clearDisplay();
-       display.println("Amb: ");
-       display.setCursor(40, 0);
-       display.println(BACKGROUND-offset);
-       display.setCursor(0, 20);
-       display.println("Left           Right");
-       display.setCursor(0, 30);
-       display.println(avg[0]);
-       display.setCursor(90,30);
-       display.println(avg[1]);
-       display.display();
+     // display.setCursor(0, 0);
+       //display.clearDisplay();
+       //display.println("Amb: ");
+       //display.setCursor(40, 0);
+       //display.println(BACKGROUND-offset);
+       //display.setCursor(0, 20);
+       //display.println("Left           Right");
+       //display.setCursor(0, 30);
+       Serial.println(avg[0]);
+       //display.setCursor(90,30);
+       //display.println(avg[1]);
+       //display.display();
     }
 }
 
@@ -237,7 +237,7 @@ void pidHome() {
 
     avg = avgSamples();
 
-     display.clearDisplay();
+     //display.clearDisplay();
     // NEED TO SCALE TO REASONABLE VALUE FOR MOTOR INPUT
     // left, right
     int error = avg[0]-avg[1];
@@ -246,41 +246,39 @@ void pidHome() {
     d = KD*(error-lastError); 
     g = (p+d)/(sqrt(intensity));
     
-    if (avg[0] > BACKGROUND-offset && avg[1] > BACKGROUND-offset) { // makes sure at least one eye is on the beacon at all times, otherwise initiates spin sequence
-      spinSearch();
-    } else if(avg[0] >= avg[1]){
+     if(avg[0] >= avg[1]){
       motors.move(-dMS+g, -dMS-g);
-       display.setCursor(0, 0);
+       /**display.setCursor(0, 0);
        display.println("left dty cycle");
        display.setCursor(95, 0);
        display.println(-dMS+g);
        display.setCursor(0, 15);
        display.println("right dty cycle");
        display.setCursor(95, 15);
-       display.println(-dMS-g);
+       display.println(-dMS-g);**/
     } else {
       motors.move(-dMS-g, -dMS+g);
-       display.setCursor(0, 0);
+       /**display.setCursor(0, 0);
        display.println("left dty cycle");
        display.setCursor(95, 0);
        display.println(-dMS-g);
        display.setCursor(0, 15);
        display.println("right dty cycle");
        display.setCursor(95, 15);
-       display.println(-dMS+g);
+       display.println(-dMS+g);**/
     }
-  
-     display.println(g);
-     display.display();
+    Serial.println("pid");
+     Serial.println(g);
+     //display.display();
 
     lastError = error;
 
     // checks if beacon is visible when tape found
     if (digitalRead(TAPE) == 1) {
-      if (avg[0] < BACKGROUND-offset && avg[1] < BACKGROUND-offset ) { // 
+      state = atHome;
         break;
-        state = atHome;
-      } /**else { // otherwise in wrong place
+        
+      /**else { // otherwise in wrong place
         spinSearch();
       }**/
     }
@@ -336,16 +334,20 @@ void setup() {
   pinMode(Leye, INPUT);
   pinMode(Reye, INPUT);
 
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+
+ 
+  Serial1.begin(115200);
+  delay(2000);
+  //display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
  
   // Displays Adafruit logo by default. call clearDisplay immediately if you don't want this.
-  display.display();
+  /**display.display();
   delay(1000);
 
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0,0);
+  display.setCursor(0,0);**/
 }
 
 void loop() {
@@ -360,9 +362,9 @@ void loop() {
 
      
         if(seekCount == 0) {
-            display.clearDisplay();
-            display.println("Moving");
-            display.display();
+            //display.clearDisplay();
+            //display.println("Moving");
+            //display.display();
              seekTime = millis();
             motors.move(dMS, -dMS);
            // Serial.println("Start Motors");
@@ -379,9 +381,9 @@ void loop() {
             _dist = distance;
             state = navigate;
             navMove = true;
-            display.clearDisplay();
-            display.println("DONE SEEKING, YEEE 🙂");
-            display.display();  
+            //display.clearDisplay();
+            //display.println("DONE SEEKING, YEEE 🙂");
+            //display.display();  
             
         } else {
             seekCount++;
@@ -392,10 +394,10 @@ void loop() {
             motors.move(0,0);
             seekState = false;
             seekCount = 0;
-            display.println(diff);
+            //display.println(diff);
             //  Serial.println("Stop Motors");
             //   Serial.println(diff);
-            display.display();
+            //display.display();
 
         
         } else if (diff >= pulseTime) {
@@ -423,10 +425,10 @@ void loop() {
         } 
         loopTime = millis();
          if (loopTime - turnTime >= TURN_TIME) {
-            display.clearDisplay();
+            //display.clearDisplay();
             motors.move(0,0);
-             display.println(loopTime-turnTime);
-            display.display();
+            // display.println(loopTime-turnTime);
+            //display.display();
 
           
             motors.move(450,450);
@@ -439,8 +441,8 @@ void loop() {
             motors.move(0,0);
             seekState = true;
             relocateCount =0 ;
-            display.println(" I'm DONE. _");
-            display.display();
+            //display.println(" I'm DONE. _");
+            //display.display();
             while(1==1){
             }
         } 
@@ -501,12 +503,15 @@ void loop() {
   for (int i =0;i < 4;i++) {
     backgroundMed();
   }  
-  display.setCursor(0, 0);
-  display.println("RH");
-  display.display();
+  //display.setCursor(0, 0);
+  //display.println("RH");
+  //display.display();
   // set IR PID states
   iRPidState();
   pidHome();
     //dump cans... or something
+
+    case atHome:
+      while(true){}
    };
 }
