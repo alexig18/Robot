@@ -67,11 +67,11 @@ void setup() {
   pinMode(Leye, INPUT);
   pinMode(Reye, INPUT);
 
- // display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
- 
-  // Displays Adafruit logo by default. call clearDisplay immediately if you don't want this.
- /** display.display();
-  delay(1000);
+  Serial1.begin(115200);
+  delay(2000);
+  Serial1.println("Amb: ");
+
+  /**display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
   display.clearDisplay();
   display.setTextSize(1);
@@ -193,10 +193,8 @@ void canDump() {
 }
 
 void loop() {
-
- 
-  canDeposit();
-  delay(3000);
+  Serial1.println("s ");
+returnHome = true;
 
   //state searches and returns to bin with can payload
   while(returnHome){
@@ -222,7 +220,9 @@ void loop() {
     // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
     int offset = 4;
     // try to minimise this val ^^
-    while(( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset) && Search == true){ 
+    while(   Search == true){ 
+      //( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND - offset) &&
+
       //inertial controll code
       double timeNow = millis();
       if(timeNow-startTime > moveinterval+stopinterval){
@@ -246,18 +246,18 @@ void loop() {
        cot++;
 
       //optional display code to debug
-      /**display.setCursor(0, 0);
-      display.clearDisplay();
-      display.println("Amb: ");
-      display.setCursor(40, 0);
-      display.println(BACKGROUND-offset);
-      display.setCursor(0, 20);
-      display.println("Left           Right");
-      display.setCursor(0, 30);
-      display.println(avg[0]);
-      display.setCursor(90,30);
-      display.println(avg[1]);
-      display.display();**/
+      //display.setCursor(0, 0);
+      //display.clearDisplay();
+      
+     // display.setCursor(40, 0);
+      //display.println(BACKGROUND-offset);
+      //display.setCursor(0, 20);
+      //display.println("Left           Right");
+      //display.setCursor(0, 30);
+      Serial1.println(avg[1]);
+      //display.setCursor(90,30);
+      //display.println(avg[1]);
+      //display.display();
      
     }
     motors.move(0, 0);
