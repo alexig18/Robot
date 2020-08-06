@@ -1,6 +1,6 @@
 #include <ServoBackFlap.h>
-#define openAng 0
-#define closedAng 125
+#define openAng 180
+#define closedAng 80
 
 Serv servo;
 

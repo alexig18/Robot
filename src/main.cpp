@@ -36,7 +36,7 @@
 #define trigger PB13
 #define MAX_DISTANCE 300
 int count = 0;
-int dMS = 370; // default motor speed
+int dMS = 425; // default motor speed
 
 #define ITERATIONS 5 //number of pings to take the median of for sonar
 #define LOOP_TIME  200 // time for each iteration of the main loop, measure using oscilloscope in milliSeconds
@@ -55,10 +55,10 @@ bool bin = false;
 
 //EDITABLE CONSTANTS
 int BACKGROUND = 0; // ambient radiation val
-int KP = 32; // proportionality constant
+int KP = 22; // proportionality constant
 int KD = 10; // derivative constant
 
-volatile int SAMPLE = 220; // sample size for eyes LARGER = less sensitive less val oscillations
+volatile int SAMPLE = 130; // sample size for eyes LARGER = less sensitive less val oscillations
 // SMALLER = more sensitive but larger val oscillations
 int bsamples = 170; // sample size for background val - LARGER means steady background val
 
@@ -168,14 +168,14 @@ void spinSearch() {
   int cot = 0;
   // inertia control variables
   uint32_t startTime = millis();
-  int moveinterval = 400; // number of millis in move cycle
+  int moveinterval = 300; // number of millis in move cycle
   int stopinterval = 225; // number of millis in stop cycle
 
-  int torqueVal = 430; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
+  int torqueVal = 460; // base move val used to move the motors, if your robot isnt moving in your move interval increase this
 
   // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
   // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
-  int offset = 3;
+  int offset = 2;
   // try to minimise this val ^^
   while( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND-offset && Search == true) { 
       
@@ -195,7 +195,7 @@ void spinSearch() {
     // samples background everyonce in a while so while loop isnt occasionally triggered by eye oscillations
     // if this val is increased you increase sensitivity with a fine resolution, opposite is true of decreasing it
     // ensures that uncontrollable light sources won't trigger the eyes
-    int samplerate = 25;
+    int samplerate = 22;
     if (cot == samplerate){
        backgroundMed();
       cot = 0;
@@ -203,18 +203,19 @@ void spinSearch() {
     cot++;
 
       //optional display code to debug
-     // display.setCursor(0, 0);
-       //display.clearDisplay();
-       //display.println("Amb: ");
-       //display.setCursor(40, 0);
-       //display.println(BACKGROUND-offset);
-       //display.setCursor(0, 20);
-       //display.println("Left           Right");
-       //display.setCursor(0, 30);
-       Serial.println(avg[0]);
-       //display.setCursor(90,30);
-       //display.println(avg[1]);
-       //display.display();
+      /**display.setCursor(0, 0);
+      display.clearDisplay();
+      display.println("Amb: ");
+      display.setCursor(40, 0);
+      display.println(BACKGROUND-offset);
+      display.setCursor(0, 20);
+      display.println("Left           Right");
+      display.setCursor(0, 30);**/
+      Serial.println(avg[0]);
+      Serial.println(avg[1]);
+      //display.setCursor(90,30);
+      //display.println(avg[1]);
+      //display.display();
     }
 }
 
@@ -227,7 +228,7 @@ void pidHome() {
   
   // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
   // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
-  int offset = 4;
+  int offset = 1;
 
   // step one; find beacon by spinning
   spinSearch();
@@ -237,7 +238,7 @@ void pidHome() {
 
     avg = avgSamples();
 
-     //display.clearDisplay();
+    //display.clearDisplay();
     // NEED TO SCALE TO REASONABLE VALUE FOR MOTOR INPUT
     // left, right
     int error = avg[0]-avg[1];
@@ -267,7 +268,7 @@ void pidHome() {
        display.setCursor(95, 15);
        display.println(-dMS+g);**/
     }
-    Serial.println("pid");
+     Serial.println("pid");
      Serial.println(g);
      //display.display();
 
@@ -504,7 +505,7 @@ void loop() {
     backgroundMed();
   }  
   //display.setCursor(0, 0);
-  //display.println("RH");
+  Serial.println("RH");
   //display.display();
   // set IR PID states
   iRPidState();
@@ -512,6 +513,7 @@ void loop() {
     //dump cans... or something
 
     case atHome:
+      bflap.open();
       while(true){}
    };
 }
