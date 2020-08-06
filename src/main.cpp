@@ -118,13 +118,13 @@ int measure()
 
 void canDeposit(){
   arm.close();
-  delay(1000);
-  cl.lift(20);
-  delay(1000);
+  delay(500);
+  cl.lift(10);
+  delay(500);
   arm.bump();
-  delay(1000);
-  cl.lower(20);
-  delay(1000);
+  delay(700);
+  cl.lower(10);
+  delay(500);
   arm.open();
 }
 
@@ -300,12 +300,13 @@ void canDump() {
 }
 
  void checkTape() {
-     if (digitalRead(TAPE)){
+     if (digitalRead(TAPE) == 1){
        motors.move(0,0);
-       motors.move(-400,-400);
-       delay(1000);
-       motors.move(400,-400);
-       delay(1000);
+       delay(500);
+       motors.move(500,500);
+       delay(700);
+       motors.move(425,-425);
+       delay(2000);
         motors.move(0,0);
      }
    }
@@ -343,7 +344,9 @@ void rightmove(){
 
 void checksonar(){
   int dist = measure();
-  if(dist <= 13){
+  Serial.println(dist);
+  if(dist <= 13 && dist != 0){
+    
     motors.move(0, 0);
     canDeposit();
   }
@@ -375,24 +378,92 @@ void setup() {
   display.setTextColor(SSD1306_WHITE);
   display.setCursor(0,0);**/
 }
-
+bool spin = false;
 bool relocateTurn = false;
 bool relocateStraight = false;
+
+double gtime = millis();
 
 uint32_t relocateTurnTime;
 uint32_t relocateStraightTime;
 uint32_t timeSeeking;
-
 void loop() {
+ 
 
-
+double current;
+double start = millis();
+double curr;
+double target;
 
 if(findCan) {
-  leftmove();
-  rightmove();
-  checkTape();
-  checksonar();
-  if(seekState) {
+seekState = true;
+current = millis();
+
+if(current - gtime >= 48*1000){
+  seekState = false;
+  returnHome = true;
+}
+if (seekState){
+motors.move(400, -400);
+int dist = measure();
+checkTape();
+ if (dist <=60 && dist !=0){
+   motors.move(-400, -400);
+   curr = millis();
+   checkTape();
+   start = millis();
+
+   while(curr - start <= 1000){
+     dist = measure();
+     curr = millis();
+     checkTape();
+     if(dist <=14 && dist !=0){
+       motors.move(0, 0);
+       canDeposit();
+       delay(500);
+     }
+   }
+
+ }
+}
+else if(returnHome){
+  
+start = millis();
+int dist = measure();
+  while(curr - start <= 2000 && !spin){
+    curr = millis();
+     dist = measure();
+     checkTape();
+    motors.move(-420, 420);
+    if(dist <=60 && dist != 0 ){
+      spin = true;
+      break;
+    }
+  }
+  if(spin){
+    motors.move(-600, -600);
+    dist = measure();
+    checkTape();
+    if(dist > 60 || dist == 0){
+      spin = false;
+    }
+  }
+  dist = measure();
+  if(dist <= 16 && dist != 0 ){
+    while(true){
+    motors.move(0, 0);
+    delay(500);
+    motors.move(-400, 400);
+    delay(5000);
+    bflap.open();
+    findCan = false;
+    }
+  }
+ 
+
+}
+
+ /** if(seekState) {
     motors.move(400,-400);
     distance = measure();
     leftmove();
@@ -476,21 +547,8 @@ if(findCan) {
         attack = false;
         findCan = true;
       }
-  } 
-  else if(returnHome){
-
-  
-     // get very stable background value before searching
-  for (int i =0;i < 4;i++) {
-    backgroundMed();
-  }  
-  //display.setCursor(0, 0);
-  Serial.println("RH");
-  delay(500);
-  //display.display();
-  // set IR PID states
-  iRPidState();
-  pidHome();
-    //dump cans... or something
-   }
+  } **/
+//}
 }
+}
+
