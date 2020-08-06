@@ -30,7 +30,7 @@
 #define Reye PA4
 
 #define Ltrigger PB4
-#define Rtrigger PB3
+#define Rtrigger PB5
 
 #define echo PB14
 #define trigger PB13
@@ -58,16 +58,17 @@ int BACKGROUND = 0; // ambient radiation val
 int KP = 22; // proportionality constant
 int KD = 10; // derivative constant
 
-volatile int SAMPLE = 130; // sample size for eyes LARGER = less sensitive less val oscillations
+volatile int SAMPLE = 20; // sample size for eyes LARGER = less sensitive less val oscillations
 // SMALLER = more sensitive but larger val oscillations
 int bsamples = 170; // sample size for background val - LARGER means steady background val
 
 //states
-const int findCan = 0;
-const int navigate = 1;
-const int deposit = 2;
-const int returnHome = 3;
-const int atHome = 4;
+bool findCan = true;
+bool navigate = false;
+bool deposit = false;
+bool returnHome = false;
+bool atHome = false;
+bool attack = false;
 
 int state = findCan;
 //substates for findCan. if not in seekState, then it is relocating
@@ -161,6 +162,7 @@ void iRPidState() {
   bin = true;
 }
 
+
 // in-place spin sequence to locate beacon
 void spinSearch() {
   //general variables
@@ -175,10 +177,10 @@ void spinSearch() {
 
   // will rotate until one eye see IR uses inertial controll to slow down its rotation/to pulse rotation
   // DANGER - this offset val HUGELY changes your sensitivity its ideal value is 0 so try to change samplerate, SAMPLE, or bsample first
-  int offset = 2;
+  int offset = 1;
   // try to minimise this val ^^
-  while( avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND-offset && Search == true) { 
-      
+  while( Search == true) { 
+      // avg[0] >= BACKGROUND-offset && avg[1] >= BACKGROUND-offset &&
     //inertial control code
     uint32_t timeNow = millis();
     if (timeNow-startTime > moveinterval+stopinterval){
@@ -206,17 +208,18 @@ void spinSearch() {
       /**display.setCursor(0, 0);
       display.clearDisplay();
       display.println("Amb: ");
-      display.setCursor(40, 0);
-      display.println(BACKGROUND-offset);
-      display.setCursor(0, 20);
+      display.setCursor(40, 0);**/
+      //Serial.println(BACKGROUND-offset);
+      /**display.setCursor(0, 20);
       display.println("Left           Right");
       display.setCursor(0, 30);**/
       Serial.println(avg[0]);
-      Serial.println(avg[1]);
+      //Serial.println(avg[1]);
       //display.setCursor(90,30);
       //display.println(avg[1]);
       //display.display();
     }
+    motors.move(0, 0);
 }
 
 // navigates robot home
@@ -307,21 +310,44 @@ void canDump() {
      }
    }
 
-  //during findCan state, if you were unsuccessful in seeking a can, move to a new location before seeking again
-  void relocateTurn(String relocateDirection) {
-      if (relocateDirection.compareTo("left")) {
-          motors.move(-dMS,dMS);
-      } else {
-          motors.move(dMS,-dMS);
-      }
-  }
-
   void timeCount(){
     uint32_t timenow = millis();
     if(GLOBALSTART - timenow > 48*1000){
       state = returnHome;
     }
   }
+
+bool leftt = false;
+bool rightt = false;
+
+
+void leftmove(){
+  if(digitalRead(Ltrigger) == 0){
+  motors.move(-400, 400);
+  delay(500);
+  motors.move(400, 400);
+  delay(500);
+  canDeposit();
+  }
+}
+
+void rightmove(){
+  if(digitalRead(Rtrigger) == 0){
+  motors.move(400, -400);
+  delay(500);
+  motors.move(400, 400);
+  delay(500);
+  canDeposit();
+  }
+}
+
+void checksonar(){
+  int dist = measure();
+  if(dist <= 13){
+    motors.move(0, 0);
+    canDeposit();
+  }
+}
 
 void setup() {  
   cl.begin(L4, R4);
@@ -334,11 +360,10 @@ void setup() {
   pinMode(Rtrigger, INPUT_PULLUP);
   pinMode(Leye, INPUT);
   pinMode(Reye, INPUT);
-
-
+   
  
   Serial1.begin(115200);
-  delay(2000);
+  delay(500);
   //display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
  
   // Displays Adafruit logo by default. call clearDisplay immediately if you don't want this.
@@ -351,169 +376,121 @@ void setup() {
   display.setCursor(0,0);**/
 }
 
+bool relocateTurn = false;
+bool relocateStraight = false;
+
+uint32_t relocateTurnTime;
+uint32_t relocateStraightTime;
+uint32_t timeSeeking;
+
 void loop() {
-  state = returnHome;
 
- switch(state) {
 
-    case findCan:
-    //checkTape();
-    timeCount();
-    if(seekState) {
 
-     
-        if(seekCount == 0) {
-            //display.clearDisplay();
-            //display.println("Moving");
-            //display.display();
-             seekTime = millis();
-            motors.move(dMS, -dMS);
-           // Serial.println("Start Motors");
-
-          
+if(findCan) {
+  leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
+  if(seekState) {
+    motors.move(400,-400);
+    distance = measure();
+    leftmove();
+    rightmove();
+    checkTape();
+    checksonar();
+    if (distance <= DETECTION_DISTANCE && distance != 0) {
+      motors.move(0,0);
+      attack = true;
+      findCan = false;
+    } else if ((millis() - timeSeeking) >= SEEK_TIME) {
+      motors.move(0,0);
+      delay(500);
+      motors.move(-400,400);
+      leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
+      seekState = false;
+      relocateTurn = true;
+      relocateTurnTime = millis();
+    }
+  } else if (relocateTurn){
+    if((millis() - relocateTurnTime) >= TURN_TIME) {
+        motors.move(400,400);
+        leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
+        relocateTurn = false;
+        relocateStraight = true;
+        relocateStraightTime = millis();
+    } 
+  } else if (relocateStraight) {
+    if ((millis() - relocateStraightTime >= RELOCATE_TIME)) {
+      motors.move(0,0);
+      relocateStraight = false;
+      seekState = true;
+      timeSeeking = millis();
+    }
+  }
+} else if(attack) {
+  int reading = measure();
+  leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
+    if (reading != 0){
+      leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
+        if (reading >= 60){
+          motors.move(750,750);
+          leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
+        } else if (reading >= 40 && reading < 60){
+              motors.move(500,500);
+              leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
         }
-        
-         loopTime = millis();
-         distance = measure();
-        if ( distance <= DETECTION_DISTANCE && distance != 0) {  
-            motors.move(0,0);
-            seekState = true;
-            seekCount = 0;
-            _dist = distance;
-            state = navigate;
-            navMove = true;
-            //display.clearDisplay();
-            //display.println("DONE SEEKING, YEEE 🙂");
-            //display.display();  
-            
-        } else {
-            seekCount++;
+        else if (reading < 40 && reading >= 24){
+          motors.move(450,450);
+          leftmove();
+  rightmove();
+  checkTape();
+  checksonar();
         }
-        //seekCount++;
-        diff = loopTime - seekTime; 
-        if (diff >= 3000) {
-            motors.move(0,0);
-            seekState = false;
-            seekCount = 0;
-            //display.println(diff);
-            //  Serial.println("Stop Motors");
-            //   Serial.println(diff);
-            //display.display();
-
-        
-        } else if (diff >= pulseTime) {
-            if(zero) {
-                motors.move(0,0);
-                zero = false;
-                pulseTime += 200;
-            } else {
-                motors.move(500,-500);
-                zero = true;
-                pulseTime += 1000;
-            }
-        } 
-    } else {
-        if(relocateCount == 0) {
-            //relocateTurn(relocateDirection);
-            turnTime = millis();
-            if(relocateDirection.compareTo("left")) {
-                motors.move(-450,450);
-                relocateDirection = right;
-            } else {
-                motors.move(450,-450);
-                relocateDirection = left;
-            }
-        } 
-        loopTime = millis();
-         if (loopTime - turnTime >= TURN_TIME) {
-            //display.clearDisplay();
-            motors.move(0,0);
-            // display.println(loopTime-turnTime);
-            //display.display();
-
-          
-            motors.move(450,450);
-
-                  
-
-        } 
-        relocateCount++;
-        if (loopTime - turnTime >= RELOCATE_TIME + TURN_TIME)  {
-            motors.move(0,0);
-            seekState = true;
-            relocateCount =0 ;
-            //display.println(" I'm DONE. _");
-            //display.display();
-            while(1==1){
-            }
-        } 
+        else if(reading<24 && reading >= 15){
+          motors.move(400,400);
+        }
+        else {
+          motors.move(0,0);
+          canDeposit();
+        }
+      } else {
+        attack = false;
+        findCan = true;
+      }
+  } 
+  else if(returnHome){
 
   
-    }
-
- 
-
-     case navigate:
-    // checkTape();
-    timeCount();
-
-     if(!homing){
-       if(navMove){
-          motors.move(dMS,dMS); 
-          navMove = false;
-       }
-
-        if(measure() > _dist){  // enter homing
-          motors.move(0,0);
-          homing = true;
-        }
-     } 
-     else{
-         //seeking
-         if(homeCount == 0) {
-             motors.move(dMS,-dMS);
-         }
-         int distance = measure();
-         if (distance <= DETECTION_DISTANCE) {
-             motors.move(0,0);
-             homeCount = 0;
-             navMove = true;
-             homing = false;
-         } else {
-             homeCount++;
-         }
-
-     }
-     if (measure() <= COLL_DIST ){
-       motors.move(0,0);
-       state = deposit;
-       navMove = false;
-       homing = false;
-     }
-
-      _dist = measure();
-
-    
-     case deposit:
-     checkTape();
-     canDeposit();
-     state = findCan;
-
-  case returnHome:
      // get very stable background value before searching
   for (int i =0;i < 4;i++) {
     backgroundMed();
   }  
   //display.setCursor(0, 0);
   Serial.println("RH");
+  delay(500);
   //display.display();
   // set IR PID states
   iRPidState();
   pidHome();
     //dump cans... or something
-
-    case atHome:
-      bflap.open();
-      while(true){}
-   };
+   }
 }
